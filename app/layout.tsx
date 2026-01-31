@@ -17,7 +17,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "RestoreSTL - Simple, Fast Cash for Houses",
+  title: "Restore STL - Simple, Fast Cash for Houses",
   description: "We buy distressed houses directly for cash in St. Louis. No repairs needed. You pick the closing date.",
 };
 
