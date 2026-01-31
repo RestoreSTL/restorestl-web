@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
 :root {
+  /* RestoreSTL Brand Colors */
+  --brand-yellow: #ffc200;
+  --brand-yellow-hover: #fbbf24;
+  --brand-green: #0a8754;
+  --brand-green-dark: #065f46;
+  --brand-green-success: #10b981;
+  
+  /* Neutrals */
+  --charcoal-deep: #0f172a;
+  --charcoal-light: #1e293b;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --background-gray: #f8fafc;
+  --border-gray: #e2e8f0;
+  
+  /* Base colors for light mode */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1e293b;
 }
 
 @theme inline {
+  /* Custom RestoreSTL color palette */
+  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-yellow-hover: var(--brand-yellow-hover);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-dark: var(--brand-green-dark);
+  --color-brand-green-success: var(--brand-green-success);
+  --color-charcoal: var(--charcoal-deep);
+  --color-charcoal-light: var(--charcoal-light);
+  
+  /* Base colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  
+  /* Typography - we'll add Google Fonts next */
+  --font-heading: 'Montserrat', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
 }
