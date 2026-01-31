@@ -63,7 +63,7 @@ export default function SituationsSection() {
               className="bg-white rounded-lg shadow-sm p-6 md:p-8 text-center hover:shadow-md transition-all duration-200"
             >
               {/* Icon */}
-              <div className="flex justify-center text-[var(--brand-green)] mb-6">
+              <div className="flex justify-center text-[var(--brand-yellow)] mb-6">
                 {situation.icon}
               </div>
 
@@ -84,7 +84,7 @@ export default function SituationsSection() {
         <div className="text-center">
           <Link
             href="/sell"
-            className="inline-block bg-[var(--brand-green)] hover:bg-[var(--brand-green-dark)] text-white font-bold text-lg px-8 py-4 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg min-h-[44px]"
+            className="inline-block bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] font-bold text-lg px-8 py-4 rounded-lg transition-all duration-200 hover:shadow-lg min-h-[44px]"
           >
             Schedule a Quick Chat
           </Link>

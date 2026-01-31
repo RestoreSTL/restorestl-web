@@ -13,7 +13,7 @@ export default function MissionSection() {
         </div>
 
         {/* Tagline */}
-        <p className="text-lg md:text-xl text-[var(--brand-green)] font-medium mb-8 md:mb-10 italic">
+        <p className="text-lg md:text-xl text-[var(--text-secondary)] font-medium mb-8 md:mb-10 italic">
           &ldquo;Restoring St. Louis Through Homeownership&rdquo;
         </p>
 
