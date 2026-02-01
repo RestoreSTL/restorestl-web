@@ -307,6 +307,21 @@ export default function WMHWWidget() {
                     <p className="font-medium mb-1 text-[var(--text-primary)]">{CONDITION_TIERS[conditionIndex].label}</p>
                     <p className="text-xs text-[var(--text-secondary)]">{CONDITION_TIERS[conditionIndex].desc}</p>
                   </div>
+
+                  {/* Dynamic Adjusted Estimate */}
+                  {valuation?.estimated_value && (
+                    <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-[var(--brand-yellow)] rounded-xl p-4 text-center mt-4">
+                      <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wide font-medium mb-1">
+                        Adjusted Estimate
+                      </p>
+                      <p className="text-3xl font-bold text-[var(--text-primary)]">
+                        {formatCurrency(valuation.estimated_value * CONDITION_TIERS[conditionIndex].multiplier)}
+                      </p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-1">
+                        Based on {CONDITION_TIERS[conditionIndex].label.toLowerCase()} condition
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {error && <p className="text-sm text-red-600 text-center">{error}</p>}

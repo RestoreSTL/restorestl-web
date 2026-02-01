@@ -24,7 +24,7 @@ export default function HeroSection() {
           Sell Your House in St. Louis
         </h1>
         <p className="text-lg sm:text-xl md:text-2xl mb-10 text-gray-200 max-w-2xl mx-auto">
-          Get a fair cash offer in 24 hours, or list for top dollar.
+          Get a reasonable cash offer in 24 hours, or list for top dollar.
           We show you all your options—you decide what&apos;s best.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

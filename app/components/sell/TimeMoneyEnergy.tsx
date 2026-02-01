@@ -82,8 +82,7 @@ export default function TimeMoneyEnergy() {
               the costs and stress of a traditional sale.
             </p>
             <p className="text-[var(--brand-yellow)] font-bold">
-              Either way, we win—and more importantly, so do you. We&apos;re here to show you
-              both paths honestly and let you decide what&apos;s best for your situation.
+              We&apos;re here to show you both paths honestly and let you decide what&apos;s best for your situation. Sometimes we help people and don&apos;t make a dime—we&apos;ll connect you with the right investor, buyer, or agent who can serve you best. Your success is what matters.
             </p>
           </div>
         </div>
