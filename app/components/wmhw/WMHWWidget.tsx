@@ -93,6 +93,10 @@ export default function WMHWWidget() {
       setValuation(v);
       if (v?.property_details_from_avm) setDetails(v.property_details_from_avm);
 
+      // Store address for chat context (Crisp integration)
+      const fullAddress = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
+      sessionStorage.setItem('property_address', fullAddress);
+
       setStep('preview');
     } catch (err) {
       console.error('valuation failed', err);
