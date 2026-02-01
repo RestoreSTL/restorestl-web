@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 
 // API configuration
 const API_BASE_URL = 'https://restorestl-backend-327709678368.us-central1.run.app';
+const API_KEY = process.env.NEXT_PUBLIC_RESTORESTL || '';
 
 // Condition tiers (from optimized WMHW)
 const CONDITION_TIERS = [
@@ -52,11 +53,29 @@ export default function WMHWWidget() {
 
     const resp = await fetch(`${API_BASE_URL}/api/valuation`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': API_KEY,  // API key for authentication
+      },
       body: JSON.stringify({ address: addressStr })
     });
 
-    if (!resp.ok) throw new Error(`valuation ${resp.status}`);
+    // Handle security-related errors with user-friendly messages
+    if (resp.status === 401) {
+      throw new Error('Authentication required. Please contact support.');
+    }
+    if (resp.status === 403) {
+      throw new Error('Access denied. Please contact support.');
+    }
+    if (resp.status === 429) {
+      const data = await resp.json().catch(() => ({}));
+      const message = data.message || 'Too many requests. Please try again later.';
+      throw new Error(message);
+    }
+    if (!resp.ok) {
+      throw new Error(`Unable to get estimate (${resp.status})`);
+    }
+
     return await resp.json() as ValuationResult;
   }, []);
 
