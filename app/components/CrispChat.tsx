@@ -24,8 +24,11 @@ export default function CrispChat() {
     script.async = true;
     document.head.appendChild(script);
 
-    // Set session data based on page context
+    // Set session data and brand styling once script loads
     script.onload = () => {
+      // Brand Styling - RestoreSTL Yellow
+      window.$crisp.push(['set', 'color:theme', ['#F59E0B']]);
+
       // Check for property address in session storage (from WMHW widget)
       const propertyAddress = sessionStorage.getItem('property_address');
 
@@ -55,7 +58,7 @@ export default function CrispChat() {
     const timeouts: NodeJS.Timeout[] = [];
 
     if (pathname === '/') {
-      // Home page - show greeting after 45 seconds
+      // Home page - show greeting after 30 seconds
       const homeTimeout = setTimeout(() => {
         if (window.$crisp && Array.isArray(window.$crisp)) {
           window.$crisp.push(['do', 'message:show', [
@@ -63,12 +66,14 @@ export default function CrispChat() {
             "Hey! 👋 Wondering how we buy houses? I'm here to walk you through it – no pressure, just answers."
           ]]);
         }
-      }, 45000);
+      }, 30000);
       timeouts.push(homeTimeout);
     }
 
     if (pathname === '/sell') {
-      // Sell page - show greeting after 30 seconds
+      // Sell page - set placeholder text and show greeting after 45 seconds
+      window.$crisp.push(['set', 'message:text', ["Ready to get an offer? Let's chat! 💬"]]);
+
       const sellTimeout = setTimeout(() => {
         if (window.$crisp && Array.isArray(window.$crisp)) {
           window.$crisp.push(['do', 'message:show', [
@@ -76,7 +81,7 @@ export default function CrispChat() {
             "Hey! Ready to get an offer? I can answer any questions before you submit, or we can just chat about your property."
           ]]);
         }
-      }, 30000);
+      }, 45000);
       timeouts.push(sellTimeout);
     }
 

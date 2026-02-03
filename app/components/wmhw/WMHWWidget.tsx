@@ -2,6 +2,14 @@
 
 import { useState, useCallback } from 'react';
 
+// Declare Crisp on window
+declare global {
+  interface Window {
+    $crisp: unknown[];
+    CRISP_WEBSITE_ID: string;
+  }
+}
+
 // API configuration
 const API_BASE_URL = 'https://restorestl-backend-327709678368.us-central1.run.app';
 const API_KEY = process.env.NEXT_PUBLIC_RESTORESTL || '';
@@ -96,6 +104,23 @@ export default function WMHWWidget() {
       // Store address for chat context (Crisp integration)
       const fullAddress = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
       sessionStorage.setItem('property_address', fullAddress);
+
+      // Auto-open chat 3 seconds after showing valuation with personalized greeting
+      setTimeout(() => {
+        if (typeof window !== 'undefined' && window.$crisp) {
+          // Update session data with the address
+          window.$crisp.push(['set', 'session:data', [[
+            ['property_address', fullAddress]
+          ]]]);
+          // Open the chat widget
+          window.$crisp.push(['do', 'chat:open']);
+          // Send personalized AI greeting with the address
+          window.$crisp.push(['do', 'message:show', [
+            'text',
+            `Hey! I see you're checking out ${fullAddress}. Want to know how we got that number? Or ready to schedule a quick call?`
+          ]]);
+        }
+      }, 3000);
 
       setStep('preview');
     } catch (err) {
