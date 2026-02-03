@@ -101,26 +101,17 @@ export default function WMHWWidget() {
       setValuation(v);
       if (v?.property_details_from_avm) setDetails(v.property_details_from_avm);
 
-      // Store address for chat context (Crisp integration)
+      // Store address for chat context (Crisp integration) - chat opens after full WMHW flow
       const fullAddress = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
       sessionStorage.setItem('property_address', fullAddress);
 
-      // Auto-open chat 3 seconds after showing valuation with personalized greeting
-      setTimeout(() => {
-        if (typeof window !== 'undefined' && window.$crisp) {
-          // Update session data with the address
-          window.$crisp.push(['set', 'session:data', [[
-            ['property_address', fullAddress]
-          ]]]);
-          // Open the chat widget
-          window.$crisp.push(['do', 'chat:open']);
-          // Send personalized AI greeting with the address
-          window.$crisp.push(['do', 'message:show', [
-            'text',
-            `Hey! I see you're checking out ${fullAddress}. Want to know how we got that number? Or ready to schedule a quick call?`
-          ]]);
-        }
-      }, 3000);
+      // Store property details for chat context
+      if (v?.estimated_value) {
+        sessionStorage.setItem('estimated_value', String(v.estimated_value));
+      }
+      if (v?.property_details_from_avm) {
+        sessionStorage.setItem('property_details', JSON.stringify(v.property_details_from_avm));
+      }
 
       setStep('preview');
     } catch (err) {
@@ -152,8 +143,59 @@ export default function WMHWWidget() {
       return;
     }
 
+    // Store condition and contact info for chat context
+    const selectedCondition = CONDITION_TIERS[conditionIndex].label;
+    const adjustedValue = valuation?.estimated_value
+      ? valuation.estimated_value * CONDITION_TIERS[conditionIndex].multiplier
+      : null;
+
+    sessionStorage.setItem('property_condition', selectedCondition);
+    sessionStorage.setItem('adjusted_value', adjustedValue ? String(Math.round(adjustedValue)) : '');
+    sessionStorage.setItem('user_name', `${first_name} ${last_name}`);
+    if (email) sessionStorage.setItem('user_email', email);
+    if (phone) sessionStorage.setItem('user_phone', phone);
+
     // TODO: Send to Scout backend API
     setStep('result');
+
+    // Auto-open chat 2 seconds after showing result with full property context
+    setTimeout(() => {
+      if (typeof window !== 'undefined' && window.$crisp) {
+        const fullAddress = sessionStorage.getItem('property_address') || '';
+        const propertyDetails = sessionStorage.getItem('property_details');
+        const parsedDetails = propertyDetails ? JSON.parse(propertyDetails) : {};
+
+        // Build property summary for chat
+        const detailsParts = [];
+        if (parsedDetails.beds) detailsParts.push(`${parsedDetails.beds} bed`);
+        if (parsedDetails.baths) detailsParts.push(`${parsedDetails.baths} bath`);
+        if (parsedDetails.sqft) detailsParts.push(`${parsedDetails.sqft.toLocaleString()} sqft`);
+        const detailsSummary = detailsParts.length > 0 ? detailsParts.join(', ') : '';
+
+        // Update Crisp session data with ALL property context
+        window.$crisp.push(['set', 'session:data', [[
+          ['property_address', fullAddress],
+          ['property_condition', selectedCondition],
+          ['adjusted_value', adjustedValue ? `$${Math.round(adjustedValue).toLocaleString()}` : ''],
+          ['beds', parsedDetails.beds || ''],
+          ['baths', parsedDetails.baths || ''],
+          ['sqft', parsedDetails.sqft || ''],
+          ['user_name', `${first_name} ${last_name}`],
+          ['user_email', email],
+          ['user_phone', phone]
+        ]]]);
+
+        // Open the chat widget
+        window.$crisp.push(['do', 'chat:open']);
+
+        // Send personalized greeting with property context
+        const greeting = detailsSummary
+          ? `Hey ${first_name}! 👋 I see you submitted ${fullAddress} (${detailsSummary}, ${selectedCondition.toLowerCase()} condition). Does that look right? I can help clarify how we got your estimate or schedule a quick call to discuss next steps.`
+          : `Hey ${first_name}! 👋 I see you submitted ${fullAddress} in ${selectedCondition.toLowerCase()} condition. Does that look right? I can help clarify how we got your estimate or schedule a quick call to discuss next steps.`;
+
+        window.$crisp.push(['do', 'message:show', ['text', greeting]]);
+      }
+    }, 2000);
   }
 
   const formatCurrency = (value: number) => {
