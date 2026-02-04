@@ -57,7 +57,7 @@ export default function WMHWWidget() {
   const [error, setError] = useState<string | undefined>(undefined);
 
   // Open chat with optimized greeting after WMHW completion (called from preview step)
-  const openChatWithContext = useCallback(() => {
+  const openChatWithContext = useCallback(async () => {
     if (typeof window === 'undefined' || !window.$crisp) return;
 
     const fullAddress = sessionStorage.getItem('property_address') || '';
@@ -78,10 +78,16 @@ export default function WMHWWidget() {
     // Open chat widget
     window.$crisp.push(['do', 'chat:open']);
 
-    // Send optimized greeting with "List vs Cash" framing (after short delay for chat to open)
-    setTimeout(() => {
-      // Send the context-aware greeting
-      const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
+    // Wait for chat to open, then get session ID and trigger backend
+    setTimeout(async () => {
+      try {
+        // Get Crisp session ID
+        const sessionId = window.$crisp.push(['get', 'session:identifier']) as unknown as string;
+
+        if (!sessionId) {
+          console.error('Could not get Crisp session ID');
+          // Fallback: show local greeting if we can't get session ID
+          const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
 
 Based on comparable sales, your home is worth around ${valueFormatted}.
 
@@ -89,10 +95,43 @@ You have two options:
 ⚡ Cash Offer: 7-14 days, $0 costs, zero hassle
 💰 List on MLS: 60-90 days, top dollar, some prep work
 
-Which path sounds better for your situation?`;
+Which path sounds better for your situation? Just type "cash", "list", or "not sure"!`;
+          window.$crisp.push(['do', 'message:show', ['text', greeting]]);
+          return;
+        }
 
-      window.$crisp.push(['do', 'message:show', ['text', greeting]]);
-    }, 500);
+        // Call backend to send greeting AND picker buttons via Crisp API
+        const response = await fetch(`${API_BASE_URL}/api/leads/chat/start`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': API_KEY,
+          },
+          body: JSON.stringify({
+            session_id: sessionId,
+            property_address: fullAddress,
+            estimated_value: valueFormatted
+          })
+        });
+
+        if (!response.ok) {
+          console.error('Failed to start chat:', await response.text());
+          // Fallback to local greeting
+          const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
+
+Based on comparable sales, your home is worth around ${valueFormatted}.
+
+You have two options:
+⚡ Cash Offer: 7-14 days, $0 costs, zero hassle
+💰 List on MLS: 60-90 days, top dollar, some prep work
+
+Which path sounds better for your situation? Just type "cash", "list", or "not sure"!`;
+          window.$crisp.push(['do', 'message:show', ['text', greeting]]);
+        }
+      } catch (error) {
+        console.error('Error starting optimized chat:', error);
+      }
+    }, 1000); // Wait 1 second for chat to fully initialize
   }, []);
 
   const fetchValuation = useCallback(async (addressInput: AddressInput) => {
