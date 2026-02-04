@@ -71,14 +71,15 @@ export default function CrispChat() {
     }
 
     if (pathname === '/sell') {
-      // Sell page - set placeholder text and show greeting after 45 seconds
-      window.$crisp.push(['set', 'message:text', ["Ready to get an offer? Let's chat! 💬"]]);
-
+      // Sell page - show greeting after 45 seconds (only if WMHW not completed)
+      // Note: Chat auto-opens with context after WMHW completion via WMHWWidget
       const sellTimeout = setTimeout(() => {
-        if (window.$crisp && Array.isArray(window.$crisp)) {
+        // Only show generic greeting if user hasn't completed WMHW
+        const wmhwCompleted = sessionStorage.getItem('wmhw_completed');
+        if (!wmhwCompleted && window.$crisp && Array.isArray(window.$crisp)) {
           window.$crisp.push(['do', 'message:show', [
             'text',
-            "Hey! Ready to get an offer? I can answer any questions before you submit, or we can just chat about your property."
+            "Hey! 👋 I'm here to help you understand your options. Enter your address above to get started!"
           ]]);
         }
       }, 45000);

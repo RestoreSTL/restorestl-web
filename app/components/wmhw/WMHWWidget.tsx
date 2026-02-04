@@ -56,6 +56,45 @@ export default function WMHWWidget() {
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | undefined>(undefined);
 
+  // Open chat with optimized greeting after WMHW completion (called from preview step)
+  const openChatWithContext = useCallback(() => {
+    if (typeof window === 'undefined' || !window.$crisp) return;
+
+    const fullAddress = sessionStorage.getItem('property_address') || '';
+    const estimatedValue = sessionStorage.getItem('estimated_value') || '';
+    const valueFormatted = estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : '';
+
+    // Mark WMHW as completed so CrispChat doesn't show generic greeting
+    sessionStorage.setItem('wmhw_completed', 'true');
+
+    // Update Crisp session data with property context
+    window.$crisp.push(['set', 'session:data', [[
+      ['property_address', fullAddress],
+      ['estimated_value', valueFormatted],
+      ['wmhw_completed', 'true'],
+      ['conversation_path', 'wmhw_flow']
+    ]]]);
+
+    // Open chat widget
+    window.$crisp.push(['do', 'chat:open']);
+
+    // Send optimized greeting with "List vs Cash" framing (after short delay for chat to open)
+    setTimeout(() => {
+      // Send the context-aware greeting
+      const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
+
+Based on comparable sales, your home is worth around ${valueFormatted}.
+
+You have two options:
+⚡ Cash Offer: 7-14 days, $0 costs, zero hassle
+💰 List on MLS: 60-90 days, top dollar, some prep work
+
+Which path sounds better for your situation?`;
+
+      window.$crisp.push(['do', 'message:show', ['text', greeting]]);
+    }, 500);
+  }, []);
+
   const fetchValuation = useCallback(async (addressInput: AddressInput) => {
     const addressStr = `${addressInput.street_address}, ${addressInput.city}, ${addressInput.state} ${addressInput.zip_code}`;
 
@@ -346,7 +385,12 @@ export default function WMHWWidget() {
                     Want a personalized cash offer or expert analysis?
                   </p>
                   <button
-                    onClick={() => setStep('refine')}
+                    onClick={() => {
+                      // Open chat with property context (optimized flow)
+                      openChatWithContext();
+                      // Also go to refine step so user can provide contact info
+                      setTimeout(() => setStep('refine'), 1000);
+                    }}
                     className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
                   >
                     Continue for Expert Analysis
