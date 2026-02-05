@@ -5,7 +5,9 @@ import { useState, useCallback } from 'react';
 // Declare Crisp on window
 declare global {
   interface Window {
-    $crisp: unknown[];
+    $crisp: unknown[] & {
+      get?: (key: string) => string | undefined;
+    };
     CRISP_WEBSITE_ID: string;
   }
 }
@@ -81,11 +83,12 @@ export default function WMHWWidget() {
     // Wait for chat to open, then get session ID and trigger backend
     setTimeout(async () => {
       try {
-        // Get Crisp session ID
-        const sessionId = window.$crisp.push(['get', 'session:identifier']) as unknown as string;
+        // Get Crisp session ID - MUST use $crisp.get(), not $crisp.push(['get', ...])
+        // @ts-expect-error - Crisp types not fully defined
+        const sessionId = window.$crisp?.get?.("session:identifier") as string | undefined;
 
         if (!sessionId) {
-          console.error('Could not get Crisp session ID');
+          console.error('Could not get Crisp session ID - $crisp.get returned:', sessionId);
           // Fallback: show local greeting if we can't get session ID
           const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
 
