@@ -281,10 +281,10 @@ Which path sounds better for your situation? Just type "cash", "list", or "not s
     if (email) sessionStorage.setItem('user_email', email);
     if (phone) sessionStorage.setItem('user_phone', phone);
 
-    // TODO: Send to Scout backend API
+    // Move to result step
     setStep('result');
 
-    // Update Crisp session with user contact info (but DON'T send new greeting - picker flow already active)
+    // Update Crisp session with user contact info, then start the optimized chat flow
     setTimeout(() => {
       if (typeof window !== 'undefined' && window.$crisp) {
         const fullAddress = sessionStorage.getItem('property_address') || '';
@@ -292,7 +292,6 @@ Which path sounds better for your situation? Just type "cash", "list", or "not s
         const parsedDetails = propertyDetails ? JSON.parse(propertyDetails) : {};
 
         // Update Crisp session data with user contact info for lead creation
-        // The picker flow from openChatWithContext() is already running, so we just add contact data
         window.$crisp.push(['set', 'session:data', [[
           ['property_address', fullAddress],
           ['property_condition', selectedCondition],
@@ -305,31 +304,13 @@ Which path sounds better for your situation? Just type "cash", "list", or "not s
           ['user_phone', phone]
         ]]]);
 
-        // Check if picker flow is already active (openChatWithContext was called from preview step)
-        const wmhwCompleted = sessionStorage.getItem('wmhw_completed');
-
-        if (wmhwCompleted === 'true') {
-          // Picker flow already active - just ensure chat stays open, don't send conflicting greeting
-          window.$crisp.push(['do', 'chat:open']);
-          console.log('WMHW flow active - keeping picker flow, not sending new greeting');
-        } else {
-          // Fallback for direct navigation to refine step (shouldn't happen in normal flow)
-          const detailsParts = [];
-          if (parsedDetails.beds) detailsParts.push(`${parsedDetails.beds} bed`);
-          if (parsedDetails.baths) detailsParts.push(`${parsedDetails.baths} bath`);
-          if (parsedDetails.sqft) detailsParts.push(`${parsedDetails.sqft.toLocaleString()} sqft`);
-          const detailsSummary = detailsParts.length > 0 ? detailsParts.join(', ') : '';
-
-          window.$crisp.push(['do', 'chat:open']);
-
-          const greeting = detailsSummary
-            ? `Hey ${first_name}! 👋 I see you submitted ${fullAddress} (${detailsSummary}, ${selectedCondition.toLowerCase()} condition). Does that look right? I can help clarify how we got your estimate or schedule a quick call to discuss next steps.`
-            : `Hey ${first_name}! 👋 I see you submitted ${fullAddress} in ${selectedCondition.toLowerCase()} condition. Does that look right? I can help clarify how we got your estimate or schedule a quick call to discuss next steps.`;
-
-          window.$crisp.push(['do', 'message:show', ['text', greeting]]);
-        }
+        // Now start the optimized chat flow - this is the main entry point
+        // User has just submitted their contact info, so open chat with picker flow
+        console.log('Contact form submitted - starting optimized chat flow');
+        openChatWithContext();
       }
-    }, 2000);
+    }, 500); // Short delay to let the UI settle on result step
+
   }
 
   const formatCurrency = (value: number) => {
@@ -481,10 +462,10 @@ Which path sounds better for your situation? Just type "cash", "list", or "not s
                   </p>
                   <button
                     onClick={() => {
-                      // Open chat with property context (optimized flow)
-                      openChatWithContext();
-                      // Also go to refine step so user can provide contact info
-                      setTimeout(() => setStep('refine'), 1000);
+                      // Go to refine step to collect contact info FIRST
+                      // Chat will open AFTER user submits contact form
+                      // This prevents the "flash open/close" issue
+                      setStep('refine');
                     }}
                     className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
                   >
