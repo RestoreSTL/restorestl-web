@@ -58,128 +58,70 @@ export default function WMHWWidget() {
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | undefined>(undefined);
 
-  // Open chat with optimized greeting after WMHW completion (called from preview step)
+  // Open chat with optimized greeting after WMHW completion (called from refine step)
+  // TICKET-012 FIX: Simplified to remove session ID dependency.
+  // Backend now auto-initializes on first message via webhook.
   const openChatWithContext = useCallback(async () => {
     if (typeof window === 'undefined' || !window.$crisp) return;
 
     const fullAddress = sessionStorage.getItem('property_address') || '';
     const estimatedValue = sessionStorage.getItem('estimated_value') || '';
-    const valueFormatted = estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : '';
+    const adjustedValue = sessionStorage.getItem('adjusted_value') || '';
+    const valueFormatted = adjustedValue
+      ? `$${parseInt(adjustedValue).toLocaleString()}`
+      : (estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : '');
+    const userName = sessionStorage.getItem('user_name') || '';
+    const userEmail = sessionStorage.getItem('user_email') || '';
+    const userPhone = sessionStorage.getItem('user_phone') || '';
+    const propertyCondition = sessionStorage.getItem('property_condition') || '';
 
     // Mark WMHW as completed so CrispChat doesn't show generic greeting
     sessionStorage.setItem('wmhw_completed', 'true');
 
-    // Update Crisp session data with property context
+    // TICKET-012: Set Crisp session data with ALL property context
+    // This data is readable by the backend via Crisp API when the webhook fires.
+    // We don't need the session ID here - Crisp handles it internally.
     window.$crisp.push(['set', 'session:data', [[
       ['property_address', fullAddress],
-      ['estimated_value', valueFormatted],
+      ['estimated_value', estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : ''],
+      ['adjusted_value', valueFormatted],
+      ['property_condition', propertyCondition],
+      ['user_name', userName],
+      ['user_email', userEmail],
+      ['user_phone', userPhone],
       ['wmhw_completed', 'true'],
       ['conversation_path', 'wmhw_flow']
     ]]]);
 
+    // Also set user email/name if available (Crisp user identification)
+    if (userEmail) {
+      window.$crisp.push(['set', 'user:email', [userEmail]]);
+    }
+    if (userName) {
+      window.$crisp.push(['set', 'user:nickname', [userName]]);
+    }
+    if (userPhone) {
+      window.$crisp.push(['set', 'user:phone', [userPhone]]);
+    }
+
+    console.log('TICKET-012: Opening chat with context:', {
+      address: fullAddress,
+      value: valueFormatted,
+      userName,
+      userEmail: userEmail ? '***' : 'none'
+    });
+
     // Open chat widget - this CREATES a session if one doesn't exist
     window.$crisp.push(['do', 'chat:open']);
 
-    // Helper to start the backend conversation
-    const startBackendConversation = async (sessionId: string) => {
-      try {
-        console.log('Starting optimized chat with session ID:', sessionId);
-        const response = await fetch(`${API_BASE_URL}/api/leads/chat/start`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': API_KEY,
-          },
-          body: JSON.stringify({
-            session_id: sessionId,
-            property_address: fullAddress,
-            estimated_value: valueFormatted
-          })
-        });
+    // TICKET-012 FIX: Send a trigger message so the webhook fires
+    // The backend will auto-initialize the optimized flow with pickers
+    // when it receives this first message and sees no existing state.
+    setTimeout(() => {
+      window.$crisp.push(['do', 'message:send', ['text', 'I just got my home estimate!']]);
+      console.log('TICKET-012: Sent trigger message to activate optimized flow');
+    }, 800); // Wait for chat to be ready
 
-        if (!response.ok) {
-          console.error('Failed to start chat:', await response.text());
-          throw new Error('Backend failed');
-        }
-        console.log('Optimized chat started successfully');
-      } catch (error) {
-        console.error('Error starting optimized chat:', error);
-        // Fallback to local greeting with text prompt
-        const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
-
-Based on comparable sales, your home is worth around ${valueFormatted}.
-
-You have two options:
-⚡ Cash Offer: 7-14 days, $0 costs, zero hassle
-💰 List on MLS: 60-90 days, top dollar, some prep work
-
-Which path sounds better for your situation? Just type "cash", "list", or "not sure"!`;
-        window.$crisp.push(['do', 'message:show', ['text', greeting]]);
-      }
-    };
-
-    // Try to get session ID with retry logic
-    // Crisp sessions are created when chat:open is called, but may take a moment
-    const getSessionIdWithRetry = async (maxAttempts: number = 5, delayMs: number = 500): Promise<string | null> => {
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        // Method 1: Try $crisp.get (newer API)
-        // @ts-expect-error - Crisp types not fully defined
-        let sessionId = window.$crisp?.get?.("session:identifier") as string | undefined;
-
-        // Method 2: Try CRISP_SESSION_ID global (set by Crisp)
-        // @ts-expect-error - Crisp globals not typed
-        if (!sessionId && window.CRISP_SESSION_ID) {
-          // @ts-expect-error - Crisp globals not typed
-          sessionId = window.CRISP_SESSION_ID as string;
-        }
-
-        // Method 3: Try extracting from Crisp internal state
-        if (!sessionId) {
-          try {
-            // @ts-expect-error - Accessing Crisp internals
-            const crispClient = window.$crisp;
-            if (crispClient && typeof crispClient === 'object' && 'session' in crispClient) {
-              // @ts-expect-error - Accessing Crisp internals
-              sessionId = crispClient.session?.identifier;
-            }
-          } catch {
-            // Ignore errors from internal access
-          }
-        }
-
-        if (sessionId) {
-          console.log(`Got Crisp session ID on attempt ${attempt}:`, sessionId);
-          return sessionId;
-        }
-
-        console.log(`Crisp session ID not ready, attempt ${attempt}/${maxAttempts}`);
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-      }
-      return null;
-    };
-
-    // Wait for chat to be ready, then get session ID
-    setTimeout(async () => {
-      const sessionId = await getSessionIdWithRetry(5, 600); // 5 attempts, 600ms apart = 3 seconds total
-
-      if (!sessionId) {
-        console.error('Could not get Crisp session ID after multiple attempts');
-        // Fallback: show local greeting if we can't get session ID
-        const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
-
-Based on comparable sales, your home is worth around ${valueFormatted}.
-
-You have two options:
-⚡ Cash Offer: 7-14 days, $0 costs, zero hassle
-💰 List on MLS: 60-90 days, top dollar, some prep work
-
-Which path sounds better for your situation? Just type "cash", "list", or "not sure"!`;
-        window.$crisp.push(['do', 'message:show', ['text', greeting]]);
-        return;
-      }
-
-      await startBackendConversation(sessionId);
-    }, 500); // Initial 500ms delay for chat:open to take effect
   }, []);
 
   const fetchValuation = useCallback(async (addressInput: AddressInput) => {
