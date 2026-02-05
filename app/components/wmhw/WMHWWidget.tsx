@@ -236,21 +236,15 @@ Which path sounds better for your situation? Just type "cash", "list", or "not s
     // TODO: Send to Scout backend API
     setStep('result');
 
-    // Auto-open chat 2 seconds after showing result with full property context
+    // Update Crisp session with user contact info (but DON'T send new greeting - picker flow already active)
     setTimeout(() => {
       if (typeof window !== 'undefined' && window.$crisp) {
         const fullAddress = sessionStorage.getItem('property_address') || '';
         const propertyDetails = sessionStorage.getItem('property_details');
         const parsedDetails = propertyDetails ? JSON.parse(propertyDetails) : {};
 
-        // Build property summary for chat
-        const detailsParts = [];
-        if (parsedDetails.beds) detailsParts.push(`${parsedDetails.beds} bed`);
-        if (parsedDetails.baths) detailsParts.push(`${parsedDetails.baths} bath`);
-        if (parsedDetails.sqft) detailsParts.push(`${parsedDetails.sqft.toLocaleString()} sqft`);
-        const detailsSummary = detailsParts.length > 0 ? detailsParts.join(', ') : '';
-
-        // Update Crisp session data with ALL property context
+        // Update Crisp session data with user contact info for lead creation
+        // The picker flow from openChatWithContext() is already running, so we just add contact data
         window.$crisp.push(['set', 'session:data', [[
           ['property_address', fullAddress],
           ['property_condition', selectedCondition],
@@ -263,15 +257,29 @@ Which path sounds better for your situation? Just type "cash", "list", or "not s
           ['user_phone', phone]
         ]]]);
 
-        // Open the chat widget
-        window.$crisp.push(['do', 'chat:open']);
+        // Check if picker flow is already active (openChatWithContext was called from preview step)
+        const wmhwCompleted = sessionStorage.getItem('wmhw_completed');
 
-        // Send personalized greeting with property context
-        const greeting = detailsSummary
-          ? `Hey ${first_name}! 👋 I see you submitted ${fullAddress} (${detailsSummary}, ${selectedCondition.toLowerCase()} condition). Does that look right? I can help clarify how we got your estimate or schedule a quick call to discuss next steps.`
-          : `Hey ${first_name}! 👋 I see you submitted ${fullAddress} in ${selectedCondition.toLowerCase()} condition. Does that look right? I can help clarify how we got your estimate or schedule a quick call to discuss next steps.`;
+        if (wmhwCompleted === 'true') {
+          // Picker flow already active - just ensure chat stays open, don't send conflicting greeting
+          window.$crisp.push(['do', 'chat:open']);
+          console.log('WMHW flow active - keeping picker flow, not sending new greeting');
+        } else {
+          // Fallback for direct navigation to refine step (shouldn't happen in normal flow)
+          const detailsParts = [];
+          if (parsedDetails.beds) detailsParts.push(`${parsedDetails.beds} bed`);
+          if (parsedDetails.baths) detailsParts.push(`${parsedDetails.baths} bath`);
+          if (parsedDetails.sqft) detailsParts.push(`${parsedDetails.sqft.toLocaleString()} sqft`);
+          const detailsSummary = detailsParts.length > 0 ? detailsParts.join(', ') : '';
 
-        window.$crisp.push(['do', 'message:show', ['text', greeting]]);
+          window.$crisp.push(['do', 'chat:open']);
+
+          const greeting = detailsSummary
+            ? `Hey ${first_name}! 👋 I see you submitted ${fullAddress} (${detailsSummary}, ${selectedCondition.toLowerCase()} condition). Does that look right? I can help clarify how we got your estimate or schedule a quick call to discuss next steps.`
+            : `Hey ${first_name}! 👋 I see you submitted ${fullAddress} in ${selectedCondition.toLowerCase()} condition. Does that look right? I can help clarify how we got your estimate or schedule a quick call to discuss next steps.`;
+
+          window.$crisp.push(['do', 'message:show', ['text', greeting]]);
+        }
       }
     }, 2000);
   }
