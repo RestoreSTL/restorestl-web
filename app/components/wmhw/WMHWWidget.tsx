@@ -77,33 +77,13 @@ export default function WMHWWidget() {
       ['conversation_path', 'wmhw_flow']
     ]]]);
 
-    // Open chat widget
+    // Open chat widget - this CREATES a session if one doesn't exist
     window.$crisp.push(['do', 'chat:open']);
 
-    // Wait for chat to open, then get session ID and trigger backend
-    setTimeout(async () => {
+    // Helper to start the backend conversation
+    const startBackendConversation = async (sessionId: string) => {
       try {
-        // Get Crisp session ID - MUST use $crisp.get(), not $crisp.push(['get', ...])
-        // @ts-expect-error - Crisp types not fully defined
-        const sessionId = window.$crisp?.get?.("session:identifier") as string | undefined;
-
-        if (!sessionId) {
-          console.error('Could not get Crisp session ID - $crisp.get returned:', sessionId);
-          // Fallback: show local greeting if we can't get session ID
-          const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
-
-Based on comparable sales, your home is worth around ${valueFormatted}.
-
-You have two options:
-⚡ Cash Offer: 7-14 days, $0 costs, zero hassle
-💰 List on MLS: 60-90 days, top dollar, some prep work
-
-Which path sounds better for your situation? Just type "cash", "list", or "not sure"!`;
-          window.$crisp.push(['do', 'message:show', ['text', greeting]]);
-          return;
-        }
-
-        // Call backend to send greeting AND picker buttons via Crisp API
+        console.log('Starting optimized chat with session ID:', sessionId);
         const response = await fetch(`${API_BASE_URL}/api/leads/chat/start`, {
           method: 'POST',
           headers: {
@@ -119,8 +99,13 @@ Which path sounds better for your situation? Just type "cash", "list", or "not s
 
         if (!response.ok) {
           console.error('Failed to start chat:', await response.text());
-          // Fallback to local greeting
-          const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
+          throw new Error('Backend failed');
+        }
+        console.log('Optimized chat started successfully');
+      } catch (error) {
+        console.error('Error starting optimized chat:', error);
+        // Fallback to local greeting with text prompt
+        const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
 
 Based on comparable sales, your home is worth around ${valueFormatted}.
 
@@ -129,12 +114,72 @@ You have two options:
 💰 List on MLS: 60-90 days, top dollar, some prep work
 
 Which path sounds better for your situation? Just type "cash", "list", or "not sure"!`;
-          window.$crisp.push(['do', 'message:show', ['text', greeting]]);
-        }
-      } catch (error) {
-        console.error('Error starting optimized chat:', error);
+        window.$crisp.push(['do', 'message:show', ['text', greeting]]);
       }
-    }, 1000); // Wait 1 second for chat to fully initialize
+    };
+
+    // Try to get session ID with retry logic
+    // Crisp sessions are created when chat:open is called, but may take a moment
+    const getSessionIdWithRetry = async (maxAttempts: number = 5, delayMs: number = 500): Promise<string | null> => {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        // Method 1: Try $crisp.get (newer API)
+        // @ts-expect-error - Crisp types not fully defined
+        let sessionId = window.$crisp?.get?.("session:identifier") as string | undefined;
+
+        // Method 2: Try CRISP_SESSION_ID global (set by Crisp)
+        // @ts-expect-error - Crisp globals not typed
+        if (!sessionId && window.CRISP_SESSION_ID) {
+          // @ts-expect-error - Crisp globals not typed
+          sessionId = window.CRISP_SESSION_ID as string;
+        }
+
+        // Method 3: Try extracting from Crisp internal state
+        if (!sessionId) {
+          try {
+            // @ts-expect-error - Accessing Crisp internals
+            const crispClient = window.$crisp;
+            if (crispClient && typeof crispClient === 'object' && 'session' in crispClient) {
+              // @ts-expect-error - Accessing Crisp internals
+              sessionId = crispClient.session?.identifier;
+            }
+          } catch {
+            // Ignore errors from internal access
+          }
+        }
+
+        if (sessionId) {
+          console.log(`Got Crisp session ID on attempt ${attempt}:`, sessionId);
+          return sessionId;
+        }
+
+        console.log(`Crisp session ID not ready, attempt ${attempt}/${maxAttempts}`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+      return null;
+    };
+
+    // Wait for chat to be ready, then get session ID
+    setTimeout(async () => {
+      const sessionId = await getSessionIdWithRetry(5, 600); // 5 attempts, 600ms apart = 3 seconds total
+
+      if (!sessionId) {
+        console.error('Could not get Crisp session ID after multiple attempts');
+        // Fallback: show local greeting if we can't get session ID
+        const greeting = `Hey! 👋 I see you're looking at ${fullAddress}.
+
+Based on comparable sales, your home is worth around ${valueFormatted}.
+
+You have two options:
+⚡ Cash Offer: 7-14 days, $0 costs, zero hassle
+💰 List on MLS: 60-90 days, top dollar, some prep work
+
+Which path sounds better for your situation? Just type "cash", "list", or "not sure"!`;
+        window.$crisp.push(['do', 'message:show', ['text', greeting]]);
+        return;
+      }
+
+      await startBackendConversation(sessionId);
+    }, 500); // Initial 500ms delay for chat:open to take effect
   }, []);
 
   const fetchValuation = useCallback(async (addressInput: AddressInput) => {
