@@ -29,18 +29,21 @@ export default function CrispChat() {
       // Brand Styling - RestoreSTL Yellow
       window.$crisp.push(['set', 'color:theme', ['#F59E0B']]);
 
-      // Check for property address in session storage (from WMHW widget)
-      const propertyAddress = sessionStorage.getItem('property_address');
+      // On /sell page, skip session:data — WMHWWidget.tsx sets full lead context
+      // after the WMHW flow completes. Setting it here would overwrite WMHW data.
+      if (!window.location.pathname.startsWith('/sell')) {
+        const propertyAddress = sessionStorage.getItem('property_address');
 
-      if (propertyAddress) {
-        window.$crisp.push(['set', 'session:data', [[
-          ['property_address', propertyAddress],
-          ['page', pathname]
-        ]]]);
-      } else {
-        window.$crisp.push(['set', 'session:data', [[
-          ['page', pathname]
-        ]]]);
+        if (propertyAddress) {
+          window.$crisp.push(['set', 'session:data', [[
+            ['property_address', propertyAddress],
+            ['page', pathname]
+          ]]]);
+        } else {
+          window.$crisp.push(['set', 'session:data', [[
+            ['page', pathname]
+          ]]]);
+        }
       }
     };
 
@@ -70,21 +73,9 @@ export default function CrispChat() {
       timeouts.push(homeTimeout);
     }
 
-    if (pathname === '/sell') {
-      // Sell page - show greeting after 45 seconds (only if WMHW not completed)
-      // Note: Chat auto-opens with context after WMHW completion via WMHWWidget
-      const sellTimeout = setTimeout(() => {
-        // Only show generic greeting if user hasn't completed WMHW
-        const wmhwCompleted = sessionStorage.getItem('wmhw_completed');
-        if (!wmhwCompleted && window.$crisp && Array.isArray(window.$crisp)) {
-          window.$crisp.push(['do', 'message:show', [
-            'text',
-            "Hey! 👋 I'm here to help you understand your options. Enter your address above to get started!"
-          ]]);
-        }
-      }, 45000);
-      timeouts.push(sellTimeout);
-    }
+    // /sell page: NO Crisp automations — WMHWWidget.tsx controls all Crisp
+    // interactions on this page (session:data, chat:open, message:send).
+    // Firing message:show here would flash the chat widget and override WMHW flow.
 
     // Cleanup timeouts on pathname change
     return () => {
