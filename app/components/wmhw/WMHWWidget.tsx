@@ -167,9 +167,8 @@ export default function WMHWWidget() {
     // Move to result step
     setStep('result');
 
-    // TICKET-010: Chat is already open from the Continue CTA button (Bug 2 fix).
-    // Here we only UPDATE the Crisp session with the user's contact info and condition,
-    // so the bot/agent has complete lead data. No need to re-open chat or send a message.
+    // TICKET-A: Open Crisp chat AFTER final "Get My Cash Offer" CTA with full lead data.
+    // Chat should NOT open earlier (removed from Continue button).
     setTimeout(() => {
       if (typeof window !== 'undefined' && window.$crisp) {
         const fullAddress = sessionStorage.getItem('property_address') || '';
@@ -201,10 +200,25 @@ export default function WMHWWidget() {
         if (first_name || last_name) window.$crisp.push(['set', 'user:nickname', [`${first_name} ${last_name}`]]);
         if (phone) window.$crisp.push(['set', 'user:phone', [phone]]);
 
-        console.log('TICKET-010: Crisp session updated with contact info', {
+        // NOW open chat — this is the correct moment (after full WMHW flow)
+        window.$crisp.push(['do', 'chat:open']);
+
+        // Build contextual first message with valuation + condition
+        const formattedValue = estimatedValue
+          ? `$${parseInt(estimatedValue).toLocaleString()}`
+          : 'N/A';
+        const chatMessage = `I just got a valuation of ${formattedValue} for my property at ${fullAddress}. Condition: ${selectedCondition}.`;
+
+        // Send after short delay so the chat widget is fully open
+        setTimeout(() => {
+          window.$crisp.push(['do', 'message:send', ['text', chatMessage]]);
+        }, 800);
+
+        console.log('TICKET-A: Crisp chat opened after final CTA with lead data', {
           name: `${first_name} ${last_name}`,
           email: email ? '***' : 'none',
-          condition: selectedCondition
+          condition: selectedCondition,
+          value: formattedValue
         });
       }
     }, 500); // Short delay to let the UI settle on result step
@@ -360,27 +374,8 @@ export default function WMHWWidget() {
                   </p>
                   <button
                     onClick={() => {
-                      // TICKET-010 Bug 2: Open Crisp chat when user clicks Continue CTA
+                      // Advance to refinement step — chat opens ONLY after final "Get My Cash Offer" CTA
                       setStep('refine');
-
-                      if (typeof window !== 'undefined' && window.$crisp) {
-                        // Set property context so the Crisp bot/agent has it immediately
-                        const fullAddress = sessionStorage.getItem('property_address') || '';
-                        const estimatedValue = sessionStorage.getItem('estimated_value') || '';
-                        window.$crisp.push(['set', 'session:data', [[
-                          ['property_address', fullAddress],
-                          ['estimated_value', estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : ''],
-                          ['conversation_path', 'wmhw_flow']
-                        ]]]);
-
-                        // Open the chat widget
-                        window.$crisp.push(['do', 'chat:open']);
-
-                        // Send pre-filled message to kick off the bot flow
-                        setTimeout(() => {
-                          window.$crisp.push(['do', 'message:send', ['text', "I'd like a free property analysis"]]);
-                        }, 800);
-                      }
                     }}
                     className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
                   >
