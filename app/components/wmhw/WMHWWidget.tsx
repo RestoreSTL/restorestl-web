@@ -2,16 +2,6 @@
 
 import { useState, useCallback } from 'react';
 
-// Declare Crisp on window
-declare global {
-  interface Window {
-    $crisp: unknown[] & {
-      get?: (key: string) => string | undefined;
-    };
-    CRISP_WEBSITE_ID: string;
-  }
-}
-
 // API configuration
 const API_BASE_URL = 'https://restorestl-backend-327709678368.us-central1.run.app';
 const API_KEY = process.env.NEXT_PUBLIC_RESTORESTL || '';
@@ -55,6 +45,7 @@ export default function WMHWWidget() {
   const [conditionIndex, setConditionIndex] = useState(2); // Default to Average
   const [valuation, setValuation] = useState<ValuationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -103,11 +94,11 @@ export default function WMHWWidget() {
       setValuation(v);
       if (v?.property_details_from_avm) setDetails(v.property_details_from_avm);
 
-      // Store address for chat context (Crisp integration) - chat opens after full WMHW flow
+      // Store address in sessionStorage for use in refine step submission
       const fullAddress = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
       sessionStorage.setItem('property_address', fullAddress);
 
-      // Store property details for chat context
+      // Store property details for refine step
       if (v?.estimated_value) {
         sessionStorage.setItem('estimated_value', String(v.estimated_value));
       }
@@ -116,13 +107,6 @@ export default function WMHWWidget() {
       }
 
       setStep('preview');
-
-      // TICKET-010 Bug 1: Prevent Crisp from flashing open on address submission.
-      // Setting sessionStorage triggers Crisp bot automations that briefly open the widget.
-      // Explicitly close it so the user sees only the valuation result.
-      if (typeof window !== 'undefined' && window.$crisp) {
-        window.$crisp.push(['do', 'chat:close']);
-      }
     } catch (err) {
       console.error('valuation failed', err);
       setError('Unable to get estimate. Please try again or contact us directly.');
@@ -152,82 +136,58 @@ export default function WMHWWidget() {
       return;
     }
 
-    // Store condition and contact info for chat context
     const selectedCondition = CONDITION_TIERS[conditionIndex].label;
     const adjustedValue = valuation?.estimated_value
       ? valuation.estimated_value * CONDITION_TIERS[conditionIndex].multiplier
       : null;
 
-    sessionStorage.setItem('property_condition', selectedCondition);
-    sessionStorage.setItem('adjusted_value', adjustedValue ? String(Math.round(adjustedValue)) : '');
-    sessionStorage.setItem('user_name', `${first_name} ${last_name}`);
-    if (email) sessionStorage.setItem('user_email', email);
-    if (phone) sessionStorage.setItem('user_phone', phone);
+    setIsSubmitting(true);
+    try {
+      const fullAddress = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
 
-    // Move to result step
-    setStep('result');
-
-    // TICKET-A: Open Crisp chat AFTER final "Get My Cash Offer" CTA with full lead data.
-    // Chat should NOT open earlier (removed from Continue button).
-    setTimeout(() => {
-      if (typeof window !== 'undefined' && window.$crisp) {
-        const fullAddress = sessionStorage.getItem('property_address') || '';
-        const estimatedValue = sessionStorage.getItem('estimated_value') || '';
-        const propertyDetails = sessionStorage.getItem('property_details');
-        const parsedDetails = propertyDetails ? JSON.parse(propertyDetails) : {};
-
-        // Mark WMHW as completed so CrispChat doesn't show generic greeting
-        sessionStorage.setItem('wmhw_completed', 'true');
-
-        // Update Crisp session data with full lead info (contact + property + condition)
-        window.$crisp.push(['set', 'session:data', [[
-          ['property_address', fullAddress],
-          ['estimated_value', estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : ''],
-          ['property_condition', selectedCondition],
-          ['adjusted_value', adjustedValue ? `$${Math.round(adjustedValue).toLocaleString()}` : ''],
-          ['beds', String(parsedDetails.beds || '')],
-          ['baths', String(parsedDetails.baths || '')],
-          ['sqft', String(parsedDetails.sqft || '')],
-          ['user_name', `${first_name} ${last_name}`],
-          ['user_email', email],
-          ['user_phone', phone],
-          ['wmhw_completed', 'true'],
-          ['conversation_path', 'wmhw_flow']
-        ]]]);
-
-        // Set user identity in Crisp
-        if (email) window.$crisp.push(['set', 'user:email', [email]]);
-        if (first_name || last_name) window.$crisp.push(['set', 'user:nickname', [`${first_name} ${last_name}`]]);
-        if (phone) window.$crisp.push(['set', 'user:phone', [phone]]);
-
-        // NOW open chat — this is the correct moment (after full WMHW flow)
-        console.log('BUG-C: About to fire chat:open', {
-          crispType: typeof window.$crisp,
-          isArray: Array.isArray(window.$crisp),
-          hasPush: typeof window.$crisp?.push,
-        });
-        window.$crisp.push(['do', 'chat:open']);
-
-        // Build contextual first message with valuation + condition
-        const formattedValue = estimatedValue
-          ? `$${parseInt(estimatedValue).toLocaleString()}`
-          : 'N/A';
-        const chatMessage = `I just got a valuation of ${formattedValue} for my property at ${fullAddress}. Condition: ${selectedCondition}.`;
-
-        // Send after short delay so the chat widget is fully open
-        setTimeout(() => {
-          window.$crisp.push(['do', 'message:send', ['text', chatMessage]]);
-        }, 800);
-
-        console.log('TICKET-A: Crisp chat opened after final CTA with lead data', {
-          name: `${first_name} ${last_name}`,
-          email: email ? '***' : 'none',
+      // Send lead directly to backend
+      const resp = await fetch(`${API_BASE_URL}/api/leads/wmhw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': API_KEY,
+        },
+        body: JSON.stringify({
+          first_name,
+          last_name,
+          email: email || null,
+          phone: phone || null,
+          address: fullAddress,
           condition: selectedCondition,
-          value: formattedValue
-        });
-      }
-    }, 500); // Short delay to let the UI settle on result step
+          estimated_value: valuation?.estimated_value ?? null,
+          adjusted_value: adjustedValue ? Math.round(adjustedValue) : null,
+          beds: details.beds ?? null,
+          baths: details.baths ?? null,
+          sqft: details.sqft ?? null,
+        }),
+      });
 
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        throw new Error(data.message || `Failed (${resp.status})`);
+      }
+
+      // Store in sessionStorage for backward compatibility
+      sessionStorage.setItem('property_address', fullAddress);
+      sessionStorage.setItem('property_condition', selectedCondition);
+      sessionStorage.setItem('adjusted_value', adjustedValue ? String(Math.round(adjustedValue)) : '');
+      sessionStorage.setItem('user_name', `${first_name} ${last_name}`);
+      if (email) sessionStorage.setItem('user_email', email);
+      if (phone) sessionStorage.setItem('user_phone', phone);
+      sessionStorage.setItem('wmhw_completed', 'true');
+
+      setStep('result');
+    } catch (err) {
+      console.error('WMHW lead submission failed', err);
+      setError(err instanceof Error ? err.message : 'Submission failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const formatCurrency = (value: number) => {
@@ -378,10 +338,7 @@ export default function WMHWWidget() {
                     Want a personalized cash offer or expert analysis?
                   </p>
                   <button
-                    onClick={() => {
-                      // Advance to refinement step — chat opens ONLY after final "Get My Cash Offer" CTA
-                      setStep('refine');
-                    }}
+                    onClick={() => setStep('refine')}
                     className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
                   >
                     Continue for Expert Analysis
@@ -484,9 +441,20 @@ export default function WMHWWidget() {
 
                 <button
                   type="submit"
-                  className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
+                  disabled={isSubmitting}
+                  className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                 >
-                  Get My Cash Offer
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Submitting...
+                    </span>
+                  ) : (
+                    'Get My Cash Offer'
+                  )}
                 </button>
               </form>
             )}
@@ -499,6 +467,21 @@ export default function WMHWWidget() {
                 <p className="text-[var(--text-secondary)]">
                   We&apos;re reviewing your information and will contact you within 24 hours with your personalized cash offer.
                 </p>
+
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <p className="text-sm font-medium text-[var(--text-primary)] mb-3">
+                    Want to speed things up? Book a free 15-minute call:
+                  </p>
+                  <a
+                    href="https://calendly.com/chris-restorestl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
+                  >
+                    Book a Call Now
+                  </a>
+                </div>
+
                 <p className="text-sm text-[var(--text-secondary)]">
                   Check your email for confirmation and next steps.
                 </p>
