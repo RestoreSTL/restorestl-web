@@ -58,72 +58,6 @@ export default function WMHWWidget() {
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | undefined>(undefined);
 
-  // Open chat with optimized greeting after WMHW completion (called from refine step)
-  // TICKET-012 FIX: Simplified to remove session ID dependency.
-  // Backend now auto-initializes on first message via webhook.
-  const openChatWithContext = useCallback(async () => {
-    if (typeof window === 'undefined' || !window.$crisp) return;
-
-    const fullAddress = sessionStorage.getItem('property_address') || '';
-    const estimatedValue = sessionStorage.getItem('estimated_value') || '';
-    const adjustedValue = sessionStorage.getItem('adjusted_value') || '';
-    const valueFormatted = adjustedValue
-      ? `$${parseInt(adjustedValue).toLocaleString()}`
-      : (estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : '');
-    const userName = sessionStorage.getItem('user_name') || '';
-    const userEmail = sessionStorage.getItem('user_email') || '';
-    const userPhone = sessionStorage.getItem('user_phone') || '';
-    const propertyCondition = sessionStorage.getItem('property_condition') || '';
-
-    // Mark WMHW as completed so CrispChat doesn't show generic greeting
-    sessionStorage.setItem('wmhw_completed', 'true');
-
-    // TICKET-012: Set Crisp session data with ALL property context
-    // This data is readable by the backend via Crisp API when the webhook fires.
-    // We don't need the session ID here - Crisp handles it internally.
-    window.$crisp.push(['set', 'session:data', [[
-      ['property_address', fullAddress],
-      ['estimated_value', estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : ''],
-      ['adjusted_value', valueFormatted],
-      ['property_condition', propertyCondition],
-      ['user_name', userName],
-      ['user_email', userEmail],
-      ['user_phone', userPhone],
-      ['wmhw_completed', 'true'],
-      ['conversation_path', 'wmhw_flow']
-    ]]]);
-
-    // Also set user email/name if available (Crisp user identification)
-    if (userEmail) {
-      window.$crisp.push(['set', 'user:email', [userEmail]]);
-    }
-    if (userName) {
-      window.$crisp.push(['set', 'user:nickname', [userName]]);
-    }
-    if (userPhone) {
-      window.$crisp.push(['set', 'user:phone', [userPhone]]);
-    }
-
-    console.log('TICKET-012: Opening chat with context:', {
-      address: fullAddress,
-      value: valueFormatted,
-      userName,
-      userEmail: userEmail ? '***' : 'none'
-    });
-
-    // Open chat widget - this CREATES a session if one doesn't exist
-    window.$crisp.push(['do', 'chat:open']);
-
-    // TICKET-012 FIX: Send a trigger message so the webhook fires
-    // The backend will auto-initialize the optimized flow with pickers
-    // when it receives this first message and sees no existing state.
-    setTimeout(() => {
-      window.$crisp.push(['do', 'message:send', ['text', 'I just got my home estimate!']]);
-      console.log('TICKET-012: Sent trigger message to activate optimized flow');
-    }, 800); // Wait for chat to be ready
-
-  }, []);
-
   const fetchValuation = useCallback(async (addressInput: AddressInput) => {
     const addressStr = `${addressInput.street_address}, ${addressInput.city}, ${addressInput.state} ${addressInput.zip_code}`;
 
@@ -182,6 +116,13 @@ export default function WMHWWidget() {
       }
 
       setStep('preview');
+
+      // TICKET-010 Bug 1: Prevent Crisp from flashing open on address submission.
+      // Setting sessionStorage triggers Crisp bot automations that briefly open the widget.
+      // Explicitly close it so the user sees only the valuation result.
+      if (typeof window !== 'undefined' && window.$crisp) {
+        window.$crisp.push(['do', 'chat:close']);
+      }
     } catch (err) {
       console.error('valuation failed', err);
       setError('Unable to get estimate. Please try again or contact us directly.');
@@ -226,30 +167,45 @@ export default function WMHWWidget() {
     // Move to result step
     setStep('result');
 
-    // Update Crisp session with user contact info, then start the optimized chat flow
+    // TICKET-010: Chat is already open from the Continue CTA button (Bug 2 fix).
+    // Here we only UPDATE the Crisp session with the user's contact info and condition,
+    // so the bot/agent has complete lead data. No need to re-open chat or send a message.
     setTimeout(() => {
       if (typeof window !== 'undefined' && window.$crisp) {
         const fullAddress = sessionStorage.getItem('property_address') || '';
+        const estimatedValue = sessionStorage.getItem('estimated_value') || '';
         const propertyDetails = sessionStorage.getItem('property_details');
         const parsedDetails = propertyDetails ? JSON.parse(propertyDetails) : {};
 
-        // Update Crisp session data with user contact info for lead creation
+        // Mark WMHW as completed so CrispChat doesn't show generic greeting
+        sessionStorage.setItem('wmhw_completed', 'true');
+
+        // Update Crisp session data with full lead info (contact + property + condition)
         window.$crisp.push(['set', 'session:data', [[
           ['property_address', fullAddress],
+          ['estimated_value', estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : ''],
           ['property_condition', selectedCondition],
           ['adjusted_value', adjustedValue ? `$${Math.round(adjustedValue).toLocaleString()}` : ''],
-          ['beds', parsedDetails.beds || ''],
-          ['baths', parsedDetails.baths || ''],
-          ['sqft', parsedDetails.sqft || ''],
+          ['beds', String(parsedDetails.beds || '')],
+          ['baths', String(parsedDetails.baths || '')],
+          ['sqft', String(parsedDetails.sqft || '')],
           ['user_name', `${first_name} ${last_name}`],
           ['user_email', email],
-          ['user_phone', phone]
+          ['user_phone', phone],
+          ['wmhw_completed', 'true'],
+          ['conversation_path', 'wmhw_flow']
         ]]]);
 
-        // Now start the optimized chat flow - this is the main entry point
-        // User has just submitted their contact info, so open chat with picker flow
-        console.log('Contact form submitted - starting optimized chat flow');
-        openChatWithContext();
+        // Set user identity in Crisp
+        if (email) window.$crisp.push(['set', 'user:email', [email]]);
+        if (first_name || last_name) window.$crisp.push(['set', 'user:nickname', [`${first_name} ${last_name}`]]);
+        if (phone) window.$crisp.push(['set', 'user:phone', [phone]]);
+
+        console.log('TICKET-010: Crisp session updated with contact info', {
+          name: `${first_name} ${last_name}`,
+          email: email ? '***' : 'none',
+          condition: selectedCondition
+        });
       }
     }, 500); // Short delay to let the UI settle on result step
 
@@ -404,10 +360,27 @@ export default function WMHWWidget() {
                   </p>
                   <button
                     onClick={() => {
-                      // Go to refine step to collect contact info FIRST
-                      // Chat will open AFTER user submits contact form
-                      // This prevents the "flash open/close" issue
+                      // TICKET-010 Bug 2: Open Crisp chat when user clicks Continue CTA
                       setStep('refine');
+
+                      if (typeof window !== 'undefined' && window.$crisp) {
+                        // Set property context so the Crisp bot/agent has it immediately
+                        const fullAddress = sessionStorage.getItem('property_address') || '';
+                        const estimatedValue = sessionStorage.getItem('estimated_value') || '';
+                        window.$crisp.push(['set', 'session:data', [[
+                          ['property_address', fullAddress],
+                          ['estimated_value', estimatedValue ? `$${parseInt(estimatedValue).toLocaleString()}` : ''],
+                          ['conversation_path', 'wmhw_flow']
+                        ]]]);
+
+                        // Open the chat widget
+                        window.$crisp.push(['do', 'chat:open']);
+
+                        // Send pre-filled message to kick off the bot flow
+                        setTimeout(() => {
+                          window.$crisp.push(['do', 'message:send', ['text', "I'd like a free property analysis"]]);
+                        }, 800);
+                      }
                     }}
                     className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
                   >
