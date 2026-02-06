@@ -201,6 +201,11 @@ export default function WMHWWidget() {
         if (phone) window.$crisp.push(['set', 'user:phone', [phone]]);
 
         // NOW open chat — this is the correct moment (after full WMHW flow)
+        console.log('BUG-C: About to fire chat:open', {
+          crispType: typeof window.$crisp,
+          isArray: Array.isArray(window.$crisp),
+          hasPush: typeof window.$crisp?.push,
+        });
         window.$crisp.push(['do', 'chat:open']);
 
         // Build contextual first message with valuation + condition
