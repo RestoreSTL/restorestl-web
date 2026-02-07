@@ -9,12 +9,14 @@ export default function Footer() {
           <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
             Need to sell ASAP?
           </h3>
-          <Link
-            href="/sell"
+          <a
+            href="https://calendly.com/chris-restorestl/15min"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-block text-[var(--brand-yellow)] hover:text-[var(--brand-yellow-hover)] font-medium text-lg underline underline-offset-4 transition-colors duration-200"
           >
             Book a time to chat.
-          </Link>
+          </a>
         </div>
 
         {/* Divider */}

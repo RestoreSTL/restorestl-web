@@ -144,16 +144,18 @@ export default function PrivacyPage() {
                 5. How We Share Your Information
               </h2>
               <p className="text-[var(--text-secondary)] leading-relaxed mb-4">
-                We do not sell your personal information. We may share it with:
+                Your information stays with Restore STL. Period.
               </p>
-              <ul className="list-disc pl-6 text-[var(--text-secondary)] space-y-2">
-                <li>
-                  Service providers who help us operate (title companies,
-                  inspectors, contractors)
-                </li>
-                <li>Legal and professional advisors when necessary</li>
-                <li>Law enforcement when required by law</li>
-              </ul>
+              <p className="text-[var(--text-secondary)] leading-relaxed mb-4">
+                We don&apos;t sell your data, we don&apos;t add you to marketing
+                lists, and we don&apos;t share your info with third parties. The
+                only person who will ever contact you is a Restore STL team
+                member &mdash; someone local who actually knows your
+                neighborhood.
+              </p>
+              <p className="text-[var(--text-secondary)] leading-relaxed">
+                That&apos;s it.
+              </p>
             </div>
 
             {/* 6. Data Retention */}

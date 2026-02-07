@@ -1,5 +1,6 @@
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -44,33 +45,39 @@ export default function AboutPage() {
 
         {/* Our Story Section */}
         <section className="py-16 md:py-24 bg-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-8 text-center">
               Our Story
             </h2>
-            <div className="text-lg text-[var(--text-secondary)] leading-relaxed space-y-6">
-              <p>
-                Kevin Dairaghi started his career as an engineer before moving
-                into construction in 2005, where he rehabbed his first home for
-                an investor. He saw firsthand how restoring one property could
-                change an entire block. That conviction grew into Restore STL
-                &mdash; a team of local investors, contractors, and real estate
-                professionals who buy distressed houses so owners can move
-                forward and neighborhoods can come back to life.
-              </p>
-              <p>
-                Today, Restore STL focuses on South St. Louis neighborhoods
-                including Dutchtown, Bevo Mill, Marine Villa, and Carondelet. We
-                work with homeowners facing tough situations &mdash; inherited
-                properties, costly repairs, sudden life changes &mdash; and
-                provide honest, straightforward solutions. No pressure, no fees,
-                no runaround.
-              </p>
-            </div>
-
-            {/* TODO: Add team photos */}
-            <div className="mt-12 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center">
-              <p className="text-gray-400 text-sm">Team photo placeholder</p>
+            <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start">
+              <div className="w-full md:w-2/5 flex-shrink-0">
+                <Image
+                  src="/images/kevin-dairaghi.jpeg"
+                  alt="Kevin Dairaghi, Founder of Restore STL"
+                  width={400}
+                  height={500}
+                  className="rounded-xl shadow-lg object-cover w-full"
+                />
+              </div>
+              <div className="md:w-3/5 text-lg text-[var(--text-secondary)] leading-relaxed space-y-6">
+                <p>
+                  Kevin Dairaghi started his career as an engineer before moving
+                  into construction in 2005, where he rehabbed his first home for
+                  an investor. He saw firsthand how restoring one property could
+                  change an entire block. That conviction grew into Restore STL
+                  &mdash; a team of local investors, contractors, and real estate
+                  professionals who buy distressed houses so owners can move
+                  forward and neighborhoods can come back to life.
+                </p>
+                <p>
+                  Today, Restore STL focuses on South St. Louis neighborhoods
+                  including Dutchtown, Bevo Mill, Marine Villa, and Carondelet. We
+                  work with homeowners facing tough situations &mdash; inherited
+                  properties, costly repairs, sudden life changes &mdash; and
+                  provide honest, straightforward solutions. No pressure, no fees,
+                  no runaround.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -187,20 +194,6 @@ export default function AboutPage() {
                 &mdash; Kevin Dairaghi, Founder
               </footer>
             </blockquote>
-          </div>
-        </section>
-
-        {/* TODO: Add testimonials */}
-        <section className="py-16 md:py-24 bg-[var(--background-gray)]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-8 text-center">
-              What Homeowners Say
-            </h2>
-            <div className="rounded-xl border-2 border-dashed border-gray-300 bg-white p-12 text-center">
-              <p className="text-gray-400 text-sm">
-                Testimonials placeholder &mdash; David O. and others coming soon
-              </p>
-            </div>
           </div>
         </section>
 
