@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Privacy Policy | Restore STL',
   description:
-    'How Restore STL collects, uses, and protects your personal information.',
+    'How Restore STL handles your information. Your data stays with us — no selling, no third parties.',
 };
 
 export default function PrivacyPage() {

@@ -8,6 +8,8 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Sell Your House Fast | Free Instant Home Valuation | Restore STL',
+  description:
+    'Get a cash offer on your St. Louis home in minutes. No repairs, no fees, no hassle.',
 };
 
 export default function SellPage() {
