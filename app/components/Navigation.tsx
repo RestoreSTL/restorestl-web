@@ -31,6 +31,21 @@ export default function Navigation() {
               Home
             </Link>
             <Link
+              href="/about"
+              className="text-white hover:text-[var(--brand-yellow)] transition-colors duration-200 font-medium"
+            >
+              About
+            </Link>
+            <a
+              href="tel:+13147508211"
+              className="text-white hover:text-[var(--brand-yellow)] transition-colors duration-200 font-medium flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              (314) 750-8211
+            </a>
+            <Link
               href="/sell"
               className="bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] font-semibold px-5 py-2 rounded-lg transition-all duration-200"
             >
@@ -60,7 +75,7 @@ export default function Navigation() {
         {/* Mobile Navigation Menu */}
         <div
           className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
-            isMobileMenuOpen ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
+            isMobileMenuOpen ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
           <div className="py-4 space-y-2 border-t border-white/10">
@@ -71,6 +86,23 @@ export default function Navigation() {
             >
               Home
             </Link>
+            <Link
+              href="/about"
+              className="block text-white hover:text-[var(--brand-yellow)] transition-colors duration-200 font-medium py-3 px-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              About
+            </Link>
+            <a
+              href="tel:+13147508211"
+              className="flex items-center gap-3 text-white hover:text-[var(--brand-yellow)] transition-colors duration-200 font-medium py-3 px-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              (314) 750-8211
+            </a>
             <Link
               href="/sell"
               className="block bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] font-semibold py-3 px-4 rounded-lg text-center transition-colors duration-200"
