@@ -4,6 +4,11 @@ import TwoPathComparison from '../components/sell/TwoPathComparison';
 import WMHWWidget from '../components/wmhw/WMHWWidget';
 import TimeMoneyEnergy from '../components/sell/TimeMoneyEnergy';
 import Footer from '../components/Footer';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sell Your House Fast | Free Instant Home Valuation | Restore STL',
+};
 
 export default function SellPage() {
   return (

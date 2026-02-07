@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About Restore STL - People First. Neighborhoods Next.',
+  title: 'About Restore STL | St. Louis Real Estate Investment Team',
   description:
     'Restore STL is a St. Louis real estate investment team restoring neighborhoods one home at a time. Learn about our mission and team.',
 };

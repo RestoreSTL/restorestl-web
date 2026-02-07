@@ -3,7 +3,7 @@ import Footer from '../components/Footer';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - Restore STL',
+  title: 'Privacy Policy | Restore STL',
   description:
     'How Restore STL collects, uses, and protects your personal information.',
 };

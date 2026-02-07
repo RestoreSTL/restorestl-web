@@ -20,7 +20,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Restore STL | Sell Your House Fast in St. Louis",
   description:
-    "Get a fair cash offer on your St. Louis home. No repairs, no fees, no hassle. Restore STL buys houses in any condition — close on your timeline.",
+    "Get a cash offer on your St. Louis home. No repairs, no fees, no hassle. Restore STL buys houses in any condition — close on your timeline.",
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Restore STL | Sell Your House Fast in St. Louis",
     description:
-      "Get a fair cash offer on your St. Louis home. No repairs, no fees, no hassle.",
+      "Get a cash offer on your St. Louis home. No repairs, no fees, no hassle.",
     url: "https://restorestl.com",
     siteName: "Restore STL",
     images: [
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Restore STL | Sell Your House Fast in St. Louis",
     description:
-      "Get a fair cash offer on your St. Louis home. No repairs, no fees, no hassle.",
+      "Get a cash offer on your St. Louis home. No repairs, no fees, no hassle.",
     images: ["https://restorestl.com/og-image.jpg"],
   },
 };
