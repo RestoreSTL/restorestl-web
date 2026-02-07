@@ -2,6 +2,12 @@
 
 import { useState, useCallback } from 'react';
 
+declare global {
+  interface Window {
+    dataLayer: Record<string, unknown>[];
+  }
+}
+
 // API configuration
 const API_BASE_URL = 'https://restorestl-backend-327709678368.us-central1.run.app';
 const API_KEY = process.env.NEXT_PUBLIC_RESTORESTL || '';
@@ -106,6 +112,13 @@ export default function WMHWWidget() {
         sessionStorage.setItem('property_details', JSON.stringify(v.property_details_from_avm));
       }
 
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'wmhw_address_submitted',
+        property_address: `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`,
+        estimated_value: v.estimated_value || null,
+      });
+
       setStep('preview');
     } catch (err) {
       console.error('valuation failed', err);
@@ -180,6 +193,15 @@ export default function WMHWWidget() {
       if (email) sessionStorage.setItem('user_email', email);
       if (phone) sessionStorage.setItem('user_phone', phone);
       sessionStorage.setItem('wmhw_completed', 'true');
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'wmhw_lead_submitted',
+        property_address: fullAddress,
+        property_condition: selectedCondition,
+        estimated_value: valuation?.estimated_value || null,
+        adjusted_value: adjustedValue ? Math.round(adjustedValue) : null,
+      });
 
       setStep('result');
     } catch (err) {
@@ -461,30 +483,49 @@ export default function WMHWWidget() {
 
             {/* Result Step */}
             {step === 'result' && (
-              <div className="text-center space-y-4">
-                <div className="text-6xl mb-4">✅</div>
-                <h3 className="text-2xl font-bold text-[var(--text-primary)]">You&apos;re All Set!</h3>
-                <p className="text-[var(--text-secondary)]">
-                  We&apos;re reviewing your information and will contact you within 24 hours with your personalized cash offer.
-                </p>
+              <div className="text-center space-y-5">
+                <div className="text-5xl mb-2">🏠</div>
+                <h3 className="text-2xl font-bold text-[var(--text-primary)]">Your Estimate Is Ready!</h3>
 
-                <div className="border-t border-gray-200 pt-4 mt-4">
-                  <p className="text-sm font-medium text-[var(--text-primary)] mb-3">
-                    Want to speed things up? Book a free 15-minute call:
+                {valuation?.estimated_value && (
+                  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-[var(--brand-yellow)] rounded-xl p-5 text-center">
+                    <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wide font-medium mb-1">
+                      Your Adjusted Estimate
+                    </p>
+                    <p className="text-3xl font-bold text-[var(--text-primary)]">
+                      {formatCurrency(valuation.estimated_value * CONDITION_TIERS[conditionIndex].multiplier)}
+                    </p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">
+                      Based on {CONDITION_TIERS[conditionIndex].label.toLowerCase()} condition
+                    </p>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-200 pt-5 space-y-3">
+                  <p className="text-lg font-semibold text-[var(--text-primary)]">
+                    Want a Free Property Analysis Report?
+                  </p>
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                    Book a quick 15-minute call and we&apos;ll send you a detailed report
+                    with comparable sales, repair estimates, and your home&apos;s full
+                    market breakdown — before the call.
                   </p>
                   <a
                     href="https://calendly.com/chris-restorestl"
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      window.dataLayer = window.dataLayer || [];
+                      window.dataLayer.push({ event: 'calendly_click' });
+                    }}
                     className="inline-block w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
                   >
-                    Book a Call Now
+                    Book My Free Analysis
                   </a>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    No pressure, no obligation. Just real numbers for your property.
+                  </p>
                 </div>
-
-                <p className="text-sm text-[var(--text-secondary)]">
-                  Check your email for confirmation and next steps.
-                </p>
               </div>
             )}
           </div>
