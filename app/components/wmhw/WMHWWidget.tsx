@@ -44,35 +44,10 @@ type ValuationResult = {
   property_details_from_avm?: PropertyDetails | null;
 };
 
-// Parse Google Place into our address structure
-function parsePlaceToAddress(place: google.maps.places.PlaceResult): AddressInput | null {
-  if (!place.address_components) return null;
-
-  let streetNumber = '';
-  let route = '';
-  let city = '';
-  let state = '';
-  let zip = '';
-
-  for (const comp of place.address_components) {
-    const types = comp.types;
-    if (types.includes('street_number')) streetNumber = comp.long_name;
-    if (types.includes('route')) route = comp.short_name;
-    if (types.includes('locality')) city = comp.long_name;
-    if (types.includes('administrative_area_level_1')) state = comp.short_name;
-    if (types.includes('postal_code')) zip = comp.long_name;
-  }
-
-  // Need at least street + city + state to be useful
-  if (!route || !city || !state) return null;
-
-  return {
-    street_address: streetNumber ? `${streetNumber} ${route}` : route,
-    city,
-    state,
-    zip_code: zip,
-  };
-}
+// Qualification picker options
+const TIMELINE_OPTIONS = ['ASAP (30-90 days)', 'Later This Year', 'Just Exploring'];
+const PATH_OPTIONS = ['Cash Offer', 'List on MLS', 'Not Sure'];
+const REASON_OPTIONS = ['Inherited Property', 'Need Money Fast', 'Too Many Repairs', 'Moving/Relocating'];
 
 export default function WMHWWidget() {
   const [step, setStep] = useState<'address' | 'preview' | 'refine' | 'result'>('address');
@@ -90,88 +65,120 @@ export default function WMHWWidget() {
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const autocompleteInputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  // Qualification picker state
+  const [timeline, setTimeline] = useState<string | null>(null);
+  const [pathSelected, setPathSelected] = useState<string | null>(null);
+  const [reasonForSelling, setReasonForSelling] = useState<string | null>(null);
+
+  const autocompleteContainerRef = useRef<HTMLDivElement>(null);
+  const autocompleteElementRef = useRef<HTMLElement | null>(null);
   const refineTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize Google Places Autocomplete
+  // Initialize Google Places PlaceAutocompleteElement
   useEffect(() => {
     if (!GOOGLE_MAPS_KEY) {
-      // No API key — fall back to manual fields
       setShowManualFields(true);
       return;
     }
 
-    // Check if Google Maps is already loaded
-    function initAutocomplete() {
-      if (
-        typeof window !== 'undefined' &&
-        window.google?.maps?.places &&
-        autocompleteInputRef.current &&
-        !autocompleteRef.current
-      ) {
-        const ac = new google.maps.places.Autocomplete(autocompleteInputRef.current, {
-          types: ['address'],
-          componentRestrictions: { country: 'us' },
-          fields: ['address_components', 'formatted_address'],
-        });
+    let cancelled = false;
 
-        ac.addListener('place_changed', () => {
-          const place = ac.getPlace();
-          const parsed = parsePlaceToAddress(place);
-          if (parsed) {
-            setAddress(parsed);
-            setAddressDisplay(place.formatted_address || '');
-            setError(undefined);
+    async function initAutocomplete() {
+      // Load the script if not already present
+      if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places&loading=async`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+
+        // Wait for script to load
+        await new Promise<void>((resolve, reject) => {
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load Google Maps'));
+        });
+      } else {
+        // Script tag exists, wait for google.maps to be available
+        await new Promise<void>((resolve) => {
+          if (window.google?.maps) {
+            resolve();
+            return;
           }
+          const checkInterval = setInterval(() => {
+            if (window.google?.maps) {
+              clearInterval(checkInterval);
+              resolve();
+            }
+          }, 200);
+          setTimeout(() => {
+            clearInterval(checkInterval);
+            resolve();
+          }, 5000);
+        });
+      }
+
+      if (cancelled || !autocompleteContainerRef.current) return;
+
+      try {
+        const { PlaceAutocompleteElement } = await google.maps.importLibrary('places') as google.maps.PlacesLibrary;
+
+        if (cancelled || !autocompleteContainerRef.current) return;
+
+        const autocomplete = new PlaceAutocompleteElement({
+          componentRestrictions: { country: 'us' },
+          types: ['address'],
         });
 
-        autocompleteRef.current = ac;
+        autocomplete.addEventListener('gmp-placeselect', async (event) => {
+          const place = (event as any).place;
+          await place.fetchFields({ fields: ['addressComponents', 'formattedAddress'] });
+
+          let streetNumber = '';
+          let route = '';
+          let city = '';
+          let state = '';
+          let zip = '';
+
+          for (const comp of place.addressComponents) {
+            const types = comp.types;
+            if (types.includes('street_number')) streetNumber = comp.longText;
+            if (types.includes('route')) route = comp.shortText;
+            if (types.includes('locality')) city = comp.longText;
+            if (types.includes('administrative_area_level_1')) state = comp.shortText;
+            if (types.includes('postal_code')) zip = comp.longText;
+          }
+
+          if (!route || !city || !state) return;
+
+          const parsed: AddressInput = {
+            street_address: streetNumber ? `${streetNumber} ${route}` : route,
+            city,
+            state,
+            zip_code: zip,
+          };
+
+          setAddress(parsed);
+          setAddressDisplay(place.formattedAddress || '');
+          setError(undefined);
+        });
+
+        // Clear any previous element in container
+        autocompleteContainerRef.current.innerHTML = '';
+        autocompleteContainerRef.current.appendChild(autocomplete);
+        autocompleteElementRef.current = autocomplete;
         setAutocompleteReady(true);
+      } catch (err) {
+        console.error('Failed to init PlaceAutocompleteElement', err);
+        if (!cancelled) setShowManualFields(true);
       }
     }
 
-    // If Google Maps already loaded (e.g., from layout.tsx script)
-    if (window.google?.maps?.places) {
-      initAutocomplete();
-      return;
-    }
-
-    // Load the script dynamically if not already present
-    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        // Small delay to ensure google.maps.places is ready
-        setTimeout(initAutocomplete, 100);
-      };
-      script.onerror = () => {
-        setShowManualFields(true);
-      };
-      document.head.appendChild(script);
-    } else {
-      // Script exists but may not be loaded yet
-      const checkInterval = setInterval(() => {
-        if (window.google?.maps?.places) {
-          clearInterval(checkInterval);
-          initAutocomplete();
-        }
-      }, 200);
-      // Give up after 5 seconds
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        if (!autocompleteRef.current) setShowManualFields(true);
-      }, 5000);
-    }
+    initAutocomplete().catch(() => {
+      if (!cancelled) setShowManualFields(true);
+    });
 
     return () => {
-      // Cleanup autocomplete listeners
-      if (autocompleteRef.current) {
-        google.maps.event.clearInstanceListeners(autocompleteRef.current);
-      }
+      cancelled = true;
     };
   }, []);
 
@@ -224,7 +231,7 @@ export default function WMHWWidget() {
     // Validate we have an address (either from autocomplete or manual)
     if (!address.street_address || !address.city || !address.state) {
       // If using autocomplete and they typed but didn't select
-      if (autocompleteReady && !showManualFields && autocompleteInputRef.current?.value) {
+      if (autocompleteReady && !showManualFields) {
         setError('Please select an address from the dropdown suggestions.');
         return;
       }
@@ -313,6 +320,9 @@ export default function WMHWWidget() {
           beds: details.beds ?? null,
           baths: details.baths ?? null,
           sqft: details.sqft ?? null,
+          timeline: timeline || null,
+          path_selected: pathSelected || null,
+          reason_for_selling: reasonForSelling || null,
         }),
       });
 
@@ -338,6 +348,9 @@ export default function WMHWWidget() {
         property_condition: selectedCondition,
         estimated_value: valuation?.estimated_value || null,
         adjusted_value: adjustedValue ? Math.round(adjustedValue) : null,
+        timeline: timeline || null,
+        path_selected: pathSelected || null,
+        reason_for_selling: reasonForSelling || null,
       });
 
       setStep('result');
@@ -375,18 +388,15 @@ export default function WMHWWidget() {
                 {/* Google Places Autocomplete Field */}
                 {!showManualFields && (
                   <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
+                    <div className="flex items-center border border-[var(--border-gray)] rounded-lg focus-within:ring-2 focus-within:ring-[var(--brand-yellow)] focus-within:border-transparent transition-all">
+                      <div className="pl-4 text-[var(--text-secondary)]">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                      <div ref={autocompleteContainerRef} className="flex-1 min-w-0 py-1 px-2" />
                     </div>
-                    <input
-                      ref={autocompleteInputRef}
-                      className="w-full pl-12 pr-4 py-4 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all text-lg"
-                      placeholder="Enter your property address"
-                      autoComplete="off"
-                    />
                     {address.street_address && (
                       <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center gap-2">
                         <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -620,6 +630,77 @@ export default function WMHWWidget() {
                       </p>
                     </div>
                   )}
+                </div>
+
+                {/* Qualification Pickers */}
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">Tell us about your situation</p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">This helps us prepare the right options for you.</p>
+                  </div>
+
+                  {/* Timeline Picker */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-[var(--text-secondary)]">What&apos;s your timeline?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {TIMELINE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setTimeline(timeline === opt ? null : opt)}
+                          className={`border rounded-full px-4 py-2 text-sm cursor-pointer transition-colors ${
+                            timeline === opt
+                              ? 'bg-[var(--brand-yellow)] border-[var(--brand-yellow)] text-[var(--charcoal-deep)] font-medium'
+                              : 'bg-white border-[var(--border-gray)] text-[var(--text-secondary)]'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Path Picker */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-[var(--text-secondary)]">What are you looking for?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {PATH_OPTIONS.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setPathSelected(pathSelected === opt ? null : opt)}
+                          className={`border rounded-full px-4 py-2 text-sm cursor-pointer transition-colors ${
+                            pathSelected === opt
+                              ? 'bg-[var(--brand-yellow)] border-[var(--brand-yellow)] text-[var(--charcoal-deep)] font-medium'
+                              : 'bg-white border-[var(--border-gray)] text-[var(--text-secondary)]'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Reason Picker */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-[var(--text-secondary)]">What&apos;s driving the sale?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {REASON_OPTIONS.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setReasonForSelling(reasonForSelling === opt ? null : opt)}
+                          className={`border rounded-full px-4 py-2 text-sm cursor-pointer transition-colors ${
+                            reasonForSelling === opt
+                              ? 'bg-[var(--brand-yellow)] border-[var(--brand-yellow)] text-[var(--charcoal-deep)] font-medium'
+                              : 'bg-white border-[var(--border-gray)] text-[var(--text-secondary)]'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {error && <p className="text-sm text-red-600 text-center">{error}</p>}

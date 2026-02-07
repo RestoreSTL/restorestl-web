@@ -52,3 +52,9 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: 700;
 }
+
+/* Google Places Autocomplete (new PlaceAutocompleteElement) */
+gmp-place-autocomplete {
+  width: 100%;
+  --gmpx-color-primary: #ffc200;
+}
