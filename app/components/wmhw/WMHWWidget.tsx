@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 declare global {
   interface Window {
     dataLayer: Record<string, unknown>[];
+    google: typeof google;
   }
 }
 
 // API configuration
 const API_BASE_URL = 'https://restorestl-backend-327709678368.us-central1.run.app';
 const API_KEY = process.env.NEXT_PUBLIC_RESTORESTL || '';
+const GOOGLE_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 // Condition tiers (from optimized WMHW)
 const CONDITION_TIERS = [
@@ -42,11 +44,44 @@ type ValuationResult = {
   property_details_from_avm?: PropertyDetails | null;
 };
 
+// Parse Google Place into our address structure
+function parsePlaceToAddress(place: google.maps.places.PlaceResult): AddressInput | null {
+  if (!place.address_components) return null;
+
+  let streetNumber = '';
+  let route = '';
+  let city = '';
+  let state = '';
+  let zip = '';
+
+  for (const comp of place.address_components) {
+    const types = comp.types;
+    if (types.includes('street_number')) streetNumber = comp.long_name;
+    if (types.includes('route')) route = comp.short_name;
+    if (types.includes('locality')) city = comp.long_name;
+    if (types.includes('administrative_area_level_1')) state = comp.short_name;
+    if (types.includes('postal_code')) zip = comp.long_name;
+  }
+
+  // Need at least street + city + state to be useful
+  if (!route || !city || !state) return null;
+
+  return {
+    street_address: streetNumber ? `${streetNumber} ${route}` : route,
+    city,
+    state,
+    zip_code: zip,
+  };
+}
+
 export default function WMHWWidget() {
   const [step, setStep] = useState<'address' | 'preview' | 'refine' | 'result'>('address');
   const [address, setAddress] = useState<AddressInput>({
     street_address: '', city: '', state: '', zip_code: ''
   });
+  const [addressDisplay, setAddressDisplay] = useState('');
+  const [autocompleteReady, setAutocompleteReady] = useState(false);
+  const [showManualFields, setShowManualFields] = useState(false);
   const [details, setDetails] = useState<PropertyDetails>({});
   const [conditionIndex, setConditionIndex] = useState(2); // Default to Average
   const [valuation, setValuation] = useState<ValuationResult | null>(null);
@@ -55,6 +90,111 @@ export default function WMHWWidget() {
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | undefined>(undefined);
 
+  const autocompleteInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const refineTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize Google Places Autocomplete
+  useEffect(() => {
+    if (!GOOGLE_MAPS_KEY) {
+      // No API key — fall back to manual fields
+      setShowManualFields(true);
+      return;
+    }
+
+    // Check if Google Maps is already loaded
+    function initAutocomplete() {
+      if (
+        typeof window !== 'undefined' &&
+        window.google?.maps?.places &&
+        autocompleteInputRef.current &&
+        !autocompleteRef.current
+      ) {
+        const ac = new google.maps.places.Autocomplete(autocompleteInputRef.current, {
+          types: ['address'],
+          componentRestrictions: { country: 'us' },
+          fields: ['address_components', 'formatted_address'],
+        });
+
+        ac.addListener('place_changed', () => {
+          const place = ac.getPlace();
+          const parsed = parsePlaceToAddress(place);
+          if (parsed) {
+            setAddress(parsed);
+            setAddressDisplay(place.formatted_address || '');
+            setError(undefined);
+          }
+        });
+
+        autocompleteRef.current = ac;
+        setAutocompleteReady(true);
+      }
+    }
+
+    // If Google Maps already loaded (e.g., from layout.tsx script)
+    if (window.google?.maps?.places) {
+      initAutocomplete();
+      return;
+    }
+
+    // Load the script dynamically if not already present
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        // Small delay to ensure google.maps.places is ready
+        setTimeout(initAutocomplete, 100);
+      };
+      script.onerror = () => {
+        setShowManualFields(true);
+      };
+      document.head.appendChild(script);
+    } else {
+      // Script exists but may not be loaded yet
+      const checkInterval = setInterval(() => {
+        if (window.google?.maps?.places) {
+          clearInterval(checkInterval);
+          initAutocomplete();
+        }
+      }, 200);
+      // Give up after 5 seconds
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        if (!autocompleteRef.current) setShowManualFields(true);
+      }, 5000);
+    }
+
+    return () => {
+      // Cleanup autocomplete listeners
+      if (autocompleteRef.current) {
+        google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      }
+    };
+  }, []);
+
+  // Dwell time tracking for refine step
+  useEffect(() => {
+    if (step === 'refine') {
+      refineTimerRef.current = setTimeout(() => {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'refine_step_engaged',
+          engagement_seconds: 10,
+        });
+      }, 10000);
+    }
+
+    return () => {
+      if (refineTimerRef.current) {
+        clearTimeout(refineTimerRef.current);
+        refineTimerRef.current = null;
+      }
+    };
+  }, [step]);
+
   const fetchValuation = useCallback(async (addressInput: AddressInput) => {
     const addressStr = `${addressInput.street_address}, ${addressInput.city}, ${addressInput.state} ${addressInput.zip_code}`;
 
@@ -62,32 +202,36 @@ export default function WMHWWidget() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': API_KEY,  // API key for authentication
+        'X-API-Key': API_KEY,
       },
       body: JSON.stringify({ address: addressStr })
     });
 
-    // Handle security-related errors with user-friendly messages
-    if (resp.status === 401) {
-      throw new Error('Authentication required. Please contact support.');
-    }
-    if (resp.status === 403) {
-      throw new Error('Access denied. Please contact support.');
-    }
+    if (resp.status === 401) throw new Error('Authentication required. Please contact support.');
+    if (resp.status === 403) throw new Error('Access denied. Please contact support.');
     if (resp.status === 429) {
       const data = await resp.json().catch(() => ({}));
-      const message = data.message || 'Too many requests. Please try again later.';
-      throw new Error(message);
+      throw new Error(data.message || 'Too many requests. Please try again later.');
     }
-    if (!resp.ok) {
-      throw new Error(`Unable to get estimate (${resp.status})`);
-    }
+    if (!resp.ok) throw new Error(`Unable to get estimate (${resp.status})`);
 
     return await resp.json() as ValuationResult;
   }, []);
 
   async function onAddressSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Validate we have an address (either from autocomplete or manual)
+    if (!address.street_address || !address.city || !address.state) {
+      // If using autocomplete and they typed but didn't select
+      if (autocompleteReady && !showManualFields && autocompleteInputRef.current?.value) {
+        setError('Please select an address from the dropdown suggestions.');
+        return;
+      }
+      setError('Please enter a complete address.');
+      return;
+    }
+
     setIsLoading(true);
     setError(undefined);
     setLoadingMessage('Searching comparable sales...');
@@ -100,22 +244,15 @@ export default function WMHWWidget() {
       setValuation(v);
       if (v?.property_details_from_avm) setDetails(v.property_details_from_avm);
 
-      // Store address in sessionStorage for use in refine step submission
       const fullAddress = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
       sessionStorage.setItem('property_address', fullAddress);
-
-      // Store property details for refine step
-      if (v?.estimated_value) {
-        sessionStorage.setItem('estimated_value', String(v.estimated_value));
-      }
-      if (v?.property_details_from_avm) {
-        sessionStorage.setItem('property_details', JSON.stringify(v.property_details_from_avm));
-      }
+      if (v?.estimated_value) sessionStorage.setItem('estimated_value', String(v.estimated_value));
+      if (v?.property_details_from_avm) sessionStorage.setItem('property_details', JSON.stringify(v.property_details_from_avm));
 
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: 'wmhw_address_submitted',
-        property_address: `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`,
+        property_address: fullAddress,
         estimated_value: v.estimated_value || null,
       });
 
@@ -158,7 +295,6 @@ export default function WMHWWidget() {
     try {
       const fullAddress = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
 
-      // Send lead directly to backend
       const resp = await fetch(`${API_BASE_URL}/api/leads/wmhw`, {
         method: 'POST',
         headers: {
@@ -185,8 +321,9 @@ export default function WMHWWidget() {
         throw new Error(data.message || `Failed (${resp.status})`);
       }
 
-      // Store in sessionStorage for backward compatibility
-      sessionStorage.setItem('property_address', fullAddress);
+      // Store for backward compatibility and /book page prefill
+      const fullAddr = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
+      sessionStorage.setItem('property_address', fullAddr);
       sessionStorage.setItem('property_condition', selectedCondition);
       sessionStorage.setItem('adjusted_value', adjustedValue ? String(Math.round(adjustedValue)) : '');
       sessionStorage.setItem('user_name', `${first_name} ${last_name}`);
@@ -197,7 +334,7 @@ export default function WMHWWidget() {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: 'wmhw_lead_submitted',
-        property_address: fullAddress,
+        property_address: fullAddr,
         property_condition: selectedCondition,
         estimated_value: valuation?.estimated_value || null,
         adjusted_value: adjustedValue ? Math.round(adjustedValue) : null,
@@ -235,39 +372,90 @@ export default function WMHWWidget() {
                   Get an instant estimate in 30 seconds
                 </p>
 
-                <input
-                  className="w-full px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
-                  placeholder="Street address"
-                  value={address.street_address}
-                  onChange={e => setAddress(a => ({ ...a, street_address: e.target.value }))}
-                  required
-                />
+                {/* Google Places Autocomplete Field */}
+                {!showManualFields && (
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <input
+                      ref={autocompleteInputRef}
+                      className="w-full pl-12 pr-4 py-4 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all text-lg"
+                      placeholder="Enter your property address"
+                      autoComplete="off"
+                    />
+                    {address.street_address && (
+                      <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center gap-2">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>{address.street_address}, {address.city}, {address.state} {address.zip_code}</span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowManualFields(true)}
+                      className="mt-2 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline transition-colors"
+                    >
+                      Enter address manually instead
+                    </button>
+                  </div>
+                )}
 
-                <div className="grid grid-cols-3 gap-3">
-                  <input
-                    className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
-                    placeholder="City"
-                    value={address.city}
-                    onChange={e => setAddress(a => ({ ...a, city: e.target.value }))}
-                    required
-                  />
-                  <input
-                    className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
-                    placeholder="State"
-                    value={address.state}
-                    onChange={e => setAddress(a => ({ ...a, state: e.target.value }))}
-                    maxLength={2}
-                    required
-                  />
-                  <input
-                    className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
-                    placeholder="ZIP"
-                    value={address.zip_code}
-                    onChange={e => setAddress(a => ({ ...a, zip_code: e.target.value }))}
-                    maxLength={5}
-                    required
-                  />
-                </div>
+                {/* Manual Address Fields (fallback) */}
+                {showManualFields && (
+                  <div className="space-y-3">
+                    <input
+                      className="w-full px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
+                      placeholder="Street address"
+                      autoComplete="street-address"
+                      value={address.street_address}
+                      onChange={e => setAddress(a => ({ ...a, street_address: e.target.value }))}
+                      required
+                    />
+                    <div className="grid grid-cols-3 gap-3">
+                      <input
+                        className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
+                        placeholder="City"
+                        autoComplete="address-level2"
+                        value={address.city}
+                        onChange={e => setAddress(a => ({ ...a, city: e.target.value }))}
+                        required
+                      />
+                      <input
+                        className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
+                        placeholder="State"
+                        autoComplete="address-level1"
+                        value={address.state}
+                        onChange={e => setAddress(a => ({ ...a, state: e.target.value }))}
+                        maxLength={2}
+                        required
+                      />
+                      <input
+                        className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
+                        placeholder="ZIP"
+                        autoComplete="postal-code"
+                        inputMode="numeric"
+                        value={address.zip_code}
+                        onChange={e => setAddress(a => ({ ...a, zip_code: e.target.value }))}
+                        maxLength={5}
+                        required
+                      />
+                    </div>
+                    {autocompleteReady && (
+                      <button
+                        type="button"
+                        onClick={() => setShowManualFields(false)}
+                        className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline transition-colors"
+                      >
+                        ← Use address search instead
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 <button
                   className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-8 py-4 rounded-lg font-bold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
@@ -366,7 +554,13 @@ export default function WMHWWidget() {
                     Continue for Expert Analysis
                   </button>
                   <button
-                    onClick={() => setStep('address')}
+                    onClick={() => {
+                      setStep('address');
+                      setAddress({ street_address: '', city: '', state: '', zip_code: '' });
+                      setAddressDisplay('');
+                      setValuation(null);
+                      setDetails({});
+                    }}
                     className="w-full bg-[var(--background-gray)] text-[var(--text-secondary)] px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                   >
                     ← Try Different Address
@@ -434,24 +628,29 @@ export default function WMHWWidget() {
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     name="first_name"
+                    autoComplete="given-name"
                     className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
                     placeholder="First name"
                     required
                   />
                   <input
                     name="last_name"
+                    autoComplete="family-name"
                     className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
                     placeholder="Last name"
                     required
                   />
                   <input
                     name="email"
+                    autoComplete="email"
                     className="col-span-2 px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
                     placeholder="Email (optional if phone provided)"
                     type="email"
                   />
                   <input
                     name="phone"
+                    autoComplete="tel"
+                    inputMode="tel"
                     className="col-span-2 px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
                     placeholder="Phone (optional if email provided)"
                     type="tel"
@@ -511,9 +710,7 @@ export default function WMHWWidget() {
                     market breakdown — before the call.
                   </p>
                   <a
-                    href="https://calendly.com/chris-restorestl"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/book"
                     onClick={() => {
                       window.dataLayer = window.dataLayer || [];
                       window.dataLayer.push({ event: 'calendly_click' });
