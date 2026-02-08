@@ -20,7 +20,7 @@ const TEAM = [
   {
     initials: 'KD',
     name: 'Kevin Dairaghi',
-    role: 'Deal Strategist & Closer',
+    role: 'Investment Advisor & Consultant',
     description:
       '25+ years in St. Louis real estate. Kevin visits your property, evaluates the deal, and makes the offer. He trains other investors on this exact process.',
   },
@@ -121,17 +121,17 @@ export default function AboutPage() {
         {/* ── Section 3: Stats Bar ────────────────────────────────── */}
         <section className="py-12 md:py-16 bg-[#f8f8f8]">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 text-center items-start">
               {STATS.map((stat) => (
-                <div key={stat.label}>
+                <div key={stat.label} className="flex flex-col items-center">
                   <p className="text-3xl md:text-4xl font-bold text-[var(--brand-yellow)]">
                     {stat.value}
                   </p>
-                  <p className="text-sm text-[var(--text-secondary)] mt-1">
+                  <p className="text-sm leading-snug text-[var(--text-secondary)] mt-1 max-w-[150px] mx-auto">
                     {stat.label}
                   </p>
                   {stat.subtitle && (
-                    <p className="text-xs text-[var(--text-secondary)] opacity-70">
+                    <p className="text-xs leading-snug text-[var(--text-secondary)] opacity-70 mt-0.5">
                       {stat.subtitle}
                     </p>
                   )}
