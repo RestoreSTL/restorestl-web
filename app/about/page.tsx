@@ -33,11 +33,22 @@ const TEAM = [
   },
 ];
 
-const STATS = [
-  { value: '25+', label: 'Years in St. Louis Real Estate' },
-  { value: '2', label: 'Paths for Every Seller', subtitle: 'Cash + MLS' },
-  { value: '100%', label: 'Your Data Stays With Us' },
-  { value: '1', label: 'Call. One Team.' },
+const TRUST_SIGNALS = [
+  {
+    icon: '\uD83C\uDFE0',
+    headline: '25+ Years in St. Louis',
+    subtext: 'Local experience across South City, Dutchtown, Bevo Mill, and beyond.',
+  },
+  {
+    icon: '\u2696\uFE0F',
+    headline: 'Two Paths, Your Choice',
+    subtext: 'Cash offer or MLS listing. We show you the numbers on both.',
+  },
+  {
+    icon: '\uD83E\uDD1D',
+    headline: 'One Call. One Team.',
+    subtext: 'Your info stays with us. No investor lists. No strangers calling.',
+  },
 ];
 
 const DIFFERENTIATORS = [
@@ -118,23 +129,26 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── Section 3: Stats Bar ────────────────────────────────── */}
+        {/* ── Section 3: Trust Signals ──────────────────────────────── */}
         <section className="py-12 md:py-16 bg-[#f8f8f8]">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 text-center items-start">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center">
-                  <p className="text-3xl md:text-4xl font-bold text-[var(--brand-yellow)]">
-                    {stat.value}
-                  </p>
-                  <p className="text-sm leading-snug text-[var(--text-secondary)] mt-1 max-w-[150px] mx-auto">
-                    {stat.label}
-                  </p>
-                  {stat.subtitle && (
-                    <p className="text-xs leading-snug text-[var(--text-secondary)] opacity-70 mt-0.5">
-                      {stat.subtitle}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {TRUST_SIGNALS.map((item) => (
+                <div
+                  key={item.headline}
+                  className="flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[var(--brand-yellow)]/10 flex items-center justify-center flex-shrink-0 text-xl">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[var(--text-primary)] leading-snug">
+                      {item.headline}
                     </p>
-                  )}
+                    <p className="text-xs text-[var(--text-secondary)] leading-snug mt-0.5">
+                      {item.subtext}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
