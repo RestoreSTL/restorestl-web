@@ -15,28 +15,56 @@ const TEAM = [
     name: 'Chris O\u2019Keefe',
     role: 'First Point of Contact',
     description:
-      'Chris is who you talk to when you reach out. He walks you through the numbers \u2014 what your property is worth, what your options look like, and what each path actually costs. He got into real estate over a decade ago, learned the industry from the inside, and realized that technology could put real information in homeowners\u2019 hands without the games. That\u2019s why he built the tools behind Restore STL.',
+      'Your first call. Chris walks you through the numbers \u2014 what your property is worth, what your options are, and what each path actually costs.',
   },
   {
     initials: 'KD',
     name: 'Kevin Dairaghi',
     role: 'Deal Strategist & Closer',
     description:
-      'Kevin has been in St. Louis real estate for over 25 years. He started in engineering, moved into construction, and rehabbed his first home for an investor in 2005. He saw firsthand how restoring one property could change an entire block. Kevin is a licensed agent with eXp Realty, trains other investors on deal evaluation, and has active relationships with private lenders and banks. When Kevin visits your property, you\u2019re getting the person who wrote the playbook.',
+      '25+ years in St. Louis real estate. Kevin visits your property, evaluates the deal, and makes the offer. He trains other investors on this exact process.',
   },
   {
     initials: 'JJ',
     name: 'Jake Jakubisin',
     role: 'Creative Director',
     description:
-      'Jake runs the KD Podcast and turns our campaigns into the content that brought you here. If you saw a video, an ad, or a post from Restore STL \u2014 that was Jake. He\u2019s the reason you\u2019re on this page right now.',
+      'Jake runs the KD Podcast and creates the content that brought you here. If you saw a Restore STL video or ad \u2014 that was Jake.',
+  },
+];
+
+const STATS = [
+  { value: '25+', label: 'Years in St. Louis Real Estate' },
+  { value: '2', label: 'Paths for Every Seller', subtitle: 'Cash + MLS' },
+  { value: '100%', label: 'Your Data Stays With Us' },
+  { value: '1', label: 'Call. One Team.' },
+];
+
+const DIFFERENTIATORS = [
+  {
+    icon: '\u2696\uFE0F',
+    headline: 'Every Option on the Table',
+    description:
+      'Cash offer, MLS listing, or something in between. We show you the math on every path and let you decide.',
+  },
+  {
+    icon: '\uD83D\uDD12',
+    headline: 'Your Data Stays With Us',
+    description:
+      'Your information never gets sold to an investor list. You talk to us \u2014 that\u2019s it. No spam, no strangers.',
+  },
+  {
+    icon: '\uD83D\uDCCD',
+    headline: 'Local Team, Not a Call Center',
+    description:
+      'We live and invest in St. Louis. Anyone who contacts you from Restore STL is vetted by our team.',
   },
 ];
 
 const PROMISES = [
-  'Your information stays with Restore STL. We never sell your data to investor lists.',
-  'Every person who contacts you is vetted by our team. One call. One team.',
-  'We show you both paths \u2014 cash and MLS \u2014 honestly. Even when it costs us the deal.',
+  'A good agent is worth every dollar. We work with agents every day. But you shouldn\u2019t need one just to get information about your own property.',
+  'We don\u2019t hide numbers to push you toward the option that makes us the most money.',
+  'Sometimes the right answer isn\u2019t a cash offer. Sometimes it is. Either way, you\u2019ll know where you stand.',
 ];
 
 export default function AboutPage() {
@@ -65,72 +93,71 @@ export default function AboutPage() {
               People First. Neighborhoods Next.
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-2xl mx-auto">
-              Restore STL is a St. Louis real estate team restoring
-              neighborhoods one home at a time. We help homeowners navigate
-              tough situations with honest numbers and real options.
+              Honest information. Real options. A local team that shows you
+              every path &mdash; even when it&apos;s not the most profitable one
+              for us.
             </p>
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent" />
         </section>
 
-        {/* ── Section 2: Our Story ────────────────────────────────── */}
+        {/* ── Section 2: Our Story (SHORT) ────────────────────────── */}
         <section className="py-16 md:py-24 bg-white">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-8 text-center">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-6">
               Our Story
             </h2>
-            <div className="text-lg text-[var(--text-secondary)] leading-relaxed space-y-6">
-              <p>
-                Kevin Dairaghi founded Restore STL with a straightforward
-                belief: homeowners facing tough decisions deserve honest
-                information and real options &mdash; not a sales pitch.
-              </p>
-              <p>
-                In real estate, the largest asset of most people&apos;s lives is
-                locked behind gatekeepers. Want to know your home&apos;s value?
-                Talk to an agent. Want to see your options? Sign a contract.
-                Want honest numbers? Good luck.
-              </p>
-              <p>
-                We operate differently. Our tools give you real data &mdash;
-                property values, repair estimates, comparable sales &mdash;
-                before anyone asks for a dime. Then we show you every option:
-                cash offer, MLS listing, or something in between. Even when the
-                honest answer isn&apos;t the most profitable one for us.
-              </p>
-              <p>
-                A good real estate agent is worth every dollar of their
-                commission. We work with agents every day. But you shouldn&apos;t
-                need one just to get information about your own property.
-              </p>
-              <p>
-                Today, Restore STL is driven by a growing team of investors,
-                agents, and professionals who share that same belief. The three
-                people below are who you&apos;ll work with directly &mdash; but
-                there&apos;s a bigger crew behind the scenes making it all
-                happen.
-              </p>
+            <p className="text-lg text-[var(--text-secondary)] leading-relaxed">
+              Kevin Dairaghi founded Restore STL to give St. Louis homeowners
+              something the industry won&apos;t &mdash; honest information and
+              real options, not a sales pitch. Today we&apos;re a growing team
+              of investors, agents, and professionals who believe you
+              shouldn&apos;t have to enter someone&apos;s funnel just to
+              understand your own property.
+            </p>
+          </div>
+        </section>
+
+        {/* ── Section 3: Stats Bar ────────────────────────────────── */}
+        <section className="py-12 md:py-16 bg-[#f8f8f8]">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 text-center">
+              {STATS.map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-3xl md:text-4xl font-bold text-[var(--brand-yellow)]">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-[var(--text-secondary)] mt-1">
+                    {stat.label}
+                  </p>
+                  {stat.subtitle && (
+                    <p className="text-xs text-[var(--text-secondary)] opacity-70">
+                      {stat.subtitle}
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* ── Section 3: The Team ─────────────────────────────────── */}
-        <section className="py-16 md:py-24 bg-[#f8f8f8]">
+        {/* ── Section 4: The Team ─────────────────────────────────── */}
+        <section className="py-16 md:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-12 text-center">
               The Team
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
               {TEAM.map((member) => (
                 <div
                   key={member.initials}
-                  className="bg-white rounded-xl p-8 text-center shadow-sm hover:shadow-lg transition-shadow duration-200"
+                  className="bg-white rounded-xl p-8 text-center"
                 >
                   {/* TODO: Replace monogram with actual photo */}
-                  <div className="flex justify-center mb-5">
-                    <div className="w-[120px] h-[120px] rounded-full bg-[var(--charcoal-deep)] flex items-center justify-center ring-4 ring-[var(--brand-yellow)]/20">
-                      <span className="text-3xl font-bold text-[var(--brand-yellow)]">
+                  <div className="flex justify-center mb-6">
+                    <div className="w-28 h-28 rounded-full bg-[var(--charcoal-deep)] flex items-center justify-center ring-4 ring-[var(--brand-yellow)]/20">
+                      <span className="text-4xl font-bold text-[var(--brand-yellow)]">
                         {member.initials}
                       </span>
                     </div>
@@ -150,81 +177,95 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── Section 4: How We're Different ──────────────────────── */}
+        {/* ── Section 5: Mid-Page CTA ─────────────────────────────── */}
+        <section className="py-12 md:py-16 bg-[var(--brand-yellow)]/10">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p className="text-lg font-medium text-[var(--text-primary)] mb-5">
+              Have questions about your property?
+            </p>
+            <Link
+              href="/sell"
+              className="inline-block bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] font-bold text-lg px-8 py-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl min-h-[44px]"
+            >
+              Get Your Free Estimate
+            </Link>
+          </div>
+        </section>
+
+        {/* ── Section 6: How We're Different ──────────────────────── */}
         <section className="py-16 md:py-24 bg-[var(--charcoal-deep)] text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
               How We&apos;re Different
             </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-              {/* Left column — body copy */}
-              <div className="text-lg text-gray-300 leading-relaxed space-y-6">
-                <p>
-                  Most real estate companies want to be your only option. We
-                  want to show you all of them.
-                </p>
-                <p>
-                  When you reach out to Restore STL, we pull real data on your
-                  property &mdash; comparable sales, repair estimates, market
-                  trends &mdash; and walk you through what each path actually
-                  looks like. Cash offer. MLS listing. Something in between.
-                </p>
-                <p>
-                  We don&apos;t hide numbers to push you toward the option that
-                  makes us the most money. We show you the math and let you
-                  decide. Sometimes the right answer for you isn&apos;t a cash
-                  offer. Sometimes it is. Either way, you&apos;ll know exactly
-                  where you stand.
-                </p>
-              </div>
-
-              {/* Right column — Our Promise callout */}
-              <div className="border-l-4 border-[var(--brand-yellow)] bg-white/5 rounded-r-lg p-6 md:p-8">
-                <h3 className="text-xl font-bold mb-6">Our Promise</h3>
-                <ul className="space-y-5">
-                  {PROMISES.map((text, i) => (
-                    <li key={i} className="flex gap-3 items-start">
-                      <svg
-                        className="w-6 h-6 text-[var(--brand-yellow)] flex-shrink-0 mt-0.5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <span className="text-gray-300 leading-relaxed">
-                        {text}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {DIFFERENTIATORS.map((item) => (
+                <div
+                  key={item.headline}
+                  className="bg-white/5 rounded-xl p-8 text-center"
+                >
+                  <div className="text-4xl mb-4">{item.icon}</div>
+                  <h3 className="text-lg font-bold mb-3">{item.headline}</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* ── Section 5: Kevin Quote ──────────────────────────────── */}
-        <section className="py-16 md:py-24 bg-white">
+        {/* ── Section 7: Our Promise ──────────────────────────────── */}
+        <section className="py-16 md:py-20 bg-[#111827]">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="border-l-4 border-[var(--brand-yellow)] bg-white/5 rounded-r-lg p-6 md:p-8">
+              <h3 className="text-xl font-bold text-white mb-6">
+                Our Promise
+              </h3>
+              <ul className="space-y-5">
+                {PROMISES.map((text, i) => (
+                  <li key={i} className="flex gap-3 items-start">
+                    <svg
+                      className="w-6 h-6 text-[var(--brand-yellow)] flex-shrink-0 mt-0.5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-gray-300 leading-relaxed text-sm">
+                      {text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Section 8: Kevin Quote ──────────────────────────────── */}
+        <section className="py-16 md:py-24 bg-[#1a1a2e]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <blockquote>
-              <p className="text-2xl md:text-3xl font-medium italic text-[var(--text-primary)] mb-6 leading-relaxed">
+              <p className="text-2xl md:text-3xl font-medium italic text-white mb-6 leading-relaxed">
                 <span className="text-[var(--brand-yellow)]">&ldquo;</span>I
                 started flipping houses because I wanted to restore
                 neighborhoods. What I realized is that what I was actually
-                rehabbing was myself.<span className="text-[var(--brand-yellow)]">&rdquo;</span>
+                rehabbing was myself.
+                <span className="text-[var(--brand-yellow)]">&rdquo;</span>
               </p>
-              <footer className="text-lg text-[var(--text-secondary)] font-medium">
+              <footer className="text-lg text-gray-400 font-medium">
                 &mdash; Kevin Dairaghi, Founder
               </footer>
             </blockquote>
           </div>
         </section>
 
-        {/* ── Section 6: CTA — Ready to Talk? ─────────────────────── */}
+        {/* ── Section 9: Bottom CTA ───────────────────────────────── */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
