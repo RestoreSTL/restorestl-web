@@ -74,7 +74,7 @@ export default function WMHWWidget() {
   const autocompleteElementRef = useRef<HTMLElement | null>(null);
   const refineTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize Google Places PlaceAutocompleteElement
+  // Initialize Google Maps bootstrap loader + Places PlaceAutocompleteElement
   useEffect(() => {
     if (!GOOGLE_MAPS_KEY) {
       setShowManualFields(true);
@@ -83,40 +83,50 @@ export default function WMHWWidget() {
 
     let cancelled = false;
 
+    // Install the Google Maps inline bootstrap loader (makes importLibrary available)
+    if (!window.google?.maps?.importLibrary) {
+      ((g: Record<string, string>) => {
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        let h: Promise<void> | undefined;
+        let a: HTMLScriptElement;
+        let k: string;
+        const p = 'The Google Maps JavaScript API';
+        const c = 'google';
+        const l = 'importLibrary';
+        const q = '__ib__';
+        const m = document;
+        const b: any = window;
+        b[c] = b[c] || {};
+        const d: any = b[c].maps || (b[c].maps = {});
+        const r = new Set<string>();
+        const e = new URLSearchParams();
+        const u = () =>
+          h ||
+          (h = new Promise<void>(async (f, n) => {
+            await (a = m.createElement('script'));
+            e.set('libraries', [...r] + '');
+            for (k in g)
+              e.set(
+                k.replace(/[A-Z]/g, (t: string) => '_' + t[0].toLowerCase()),
+                g[k]
+              );
+            e.set('callback', c + '.maps.' + q);
+            a.src = 'https://maps.googleapis.com/maps/api/js?' + e;
+            d[q] = f;
+            a.onerror = () => { n(Error(p + ' could not load.')); h = undefined; };
+            a.nonce =
+              m.querySelector<HTMLScriptElement>('script[nonce]')?.nonce || '';
+            m.head.append(a);
+          }));
+        d[l]
+          ? console.warn(p + ' only loads once. Ignoring:', g)
+          : (d[l] = (f: string, ...n: unknown[]) =>
+              r.add(f) && u().then(() => d[l](f, ...n)));
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+      })({ key: GOOGLE_MAPS_KEY, v: 'weekly' });
+    }
+
     async function initAutocomplete() {
-      // Load the script if not already present
-      if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places&loading=async`;
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-
-        // Wait for script to load
-        await new Promise<void>((resolve, reject) => {
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error('Failed to load Google Maps'));
-        });
-      } else {
-        // Script tag exists, wait for google.maps to be available
-        await new Promise<void>((resolve) => {
-          if (window.google?.maps) {
-            resolve();
-            return;
-          }
-          const checkInterval = setInterval(() => {
-            if (window.google?.maps) {
-              clearInterval(checkInterval);
-              resolve();
-            }
-          }, 200);
-          setTimeout(() => {
-            clearInterval(checkInterval);
-            resolve();
-          }, 5000);
-        });
-      }
-
       if (cancelled || !autocompleteContainerRef.current) return;
 
       try {
