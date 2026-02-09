@@ -245,10 +245,10 @@ export default function PrivacyPage() {
                 <p className="text-[var(--text-secondary)]">
                   Phone:{' '}
                   <a
-                    href="tel:+13147508211"
+                    href="tel:+13147363311"
                     className="text-[var(--brand-yellow)] hover:text-[var(--brand-yellow-hover)] underline"
                   >
-                    (314) 750-8211
+                    (314) 736-3311
                   </a>
                 </p>
                 <p className="text-[var(--text-secondary)]">
