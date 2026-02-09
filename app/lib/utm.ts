@@ -3,9 +3,6 @@
  *
  * Reads utm_source, utm_medium, utm_campaign, utm_content, utm_term
  * from URL query params and persists them in localStorage.
- *
- * Also sets UTM values as Crisp session data so the chat webhook
- * can read them when qualifying leads (TICKET-012).
  */
 
 export interface UTMParams {
@@ -73,37 +70,6 @@ export function getStoredUTMs(): UTMParams {
     // ignore parse / access errors
   }
   return emptyUTMs();
-}
-
-/**
- * Push stored UTMs into the Crisp session so the chat webhook
- * can read them from conversation metadata.
- *
- * Safe to call before Crisp loads — will silently no-op.
- */
-export function syncUTMsToCrisp(): void {
-  if (typeof window === "undefined") return;
-
-  const utms = getStoredUTMs();
-
-  // $crisp is the Crisp JS SDK global
-  const crisp = (window as unknown as Record<string, unknown>).$crisp;
-  if (!crisp || !Array.isArray(crisp)) return;
-
-  try {
-    const pairs: [string, string][] = [];
-    if (utms.utm_source) pairs.push(["utm_source", utms.utm_source]);
-    if (utms.utm_medium) pairs.push(["utm_medium", utms.utm_medium]);
-    if (utms.utm_campaign) pairs.push(["utm_campaign", utms.utm_campaign]);
-    if (utms.utm_content) pairs.push(["utm_content", utms.utm_content]);
-    if (utms.utm_term) pairs.push(["utm_term", utms.utm_term]);
-
-    if (pairs.length > 0) {
-      (crisp as unknown[]).push(["set", "session:data", [pairs]]);
-    }
-  } catch {
-    // Crisp not ready yet — ignore
-  }
 }
 
 function emptyUTMs(): UTMParams {

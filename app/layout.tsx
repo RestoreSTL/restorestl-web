@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Montserrat, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import CrispChat from "./components/CrispChat";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -78,7 +77,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {children}
-        <CrispChat />
       </body>
     </html>
   );

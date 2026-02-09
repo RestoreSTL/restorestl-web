@@ -1,12 +1,4 @@
-'use client';
-
-// Declare Crisp on window
-declare global {
-  interface Window {
-    $crisp: unknown[];
-    CRISP_WEBSITE_ID: string;
-  }
-}
+import Link from 'next/link';
 
 const situations = [
   {
@@ -88,18 +80,13 @@ export default function SituationsSection() {
           ))}
         </div>
 
-        {/* CTA Button - Opens Crisp Chat */}
         <div className="text-center">
-          <button
-            onClick={() => {
-              if (typeof window !== 'undefined' && window.$crisp) {
-                window.$crisp.push(['do', 'chat:open']);
-              }
-            }}
-            className="inline-block bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] font-bold text-lg px-8 py-4 rounded-lg transition-all duration-200 hover:shadow-lg min-h-[44px] cursor-pointer"
+          <Link
+            href="/book"
+            className="inline-block bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] font-bold text-lg px-8 py-4 rounded-lg transition-all duration-200 hover:shadow-lg min-h-[44px]"
           >
             Schedule a Quick Chat
-          </button>
+          </Link>
         </div>
       </div>
     </section>
