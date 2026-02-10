@@ -176,6 +176,39 @@ export default function WMHWWidget() {
         autocompleteContainerRef.current.innerHTML = '';
         autocompleteContainerRef.current.appendChild(autocomplete);
         autocompleteElementRef.current = autocomplete;
+
+        // Fix Shadow DOM styling — inject white background into the shadow root
+        // The gmp-place-autocomplete element uses Shadow DOM, so external CSS can't reach it
+        const injectShadowStyles = () => {
+          const shadowRoot = autocomplete.shadowRoot;
+          if (shadowRoot) {
+            const style = document.createElement('style');
+            style.textContent = `
+              :host {
+                background: transparent !important;
+              }
+              input {
+                background-color: #ffffff !important;
+                color: #1e293b !important;
+                border: none !important;
+                outline: none !important;
+                font-size: 1rem !important;
+                padding: 0.75rem 0.5rem !important;
+                width: 100% !important;
+              }
+              input::placeholder {
+                color: #94a3b8 !important;
+              }
+            `;
+            shadowRoot.appendChild(style);
+          }
+        };
+
+        // Try immediately, then retry after a short delay in case shadow DOM isn't ready yet
+        injectShadowStyles();
+        setTimeout(injectShadowStyles, 100);
+        setTimeout(injectShadowStyles, 500);
+
         setAutocompleteReady(true);
       } catch (err) {
         console.error('Failed to init PlaceAutocompleteElement', err);
@@ -398,14 +431,14 @@ export default function WMHWWidget() {
                 {/* Google Places Autocomplete Field */}
                 {!showManualFields && (
                   <div className="relative">
-                    <div className="flex items-center border border-[var(--border-gray)] rounded-lg focus-within:ring-2 focus-within:ring-[var(--brand-yellow)] focus-within:border-transparent transition-all">
+                    <div className="flex items-center bg-white border border-[var(--border-gray)] rounded-lg focus-within:ring-2 focus-within:ring-[var(--brand-yellow)] focus-within:border-transparent transition-all">
                       <div className="pl-4 text-[var(--text-secondary)]">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </div>
-                      <div ref={autocompleteContainerRef} className="flex-1 min-w-0 py-1 px-2" />
+                      <div ref={autocompleteContainerRef} className="flex-1 min-w-0 py-1 px-2 bg-white" />
                     </div>
                     {address.street_address && (
                       <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center gap-2">
@@ -415,13 +448,6 @@ export default function WMHWWidget() {
                         <span>{address.street_address}, {address.city}, {address.state} {address.zip_code}</span>
                       </div>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => setShowManualFields(true)}
-                      className="mt-2 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline transition-colors"
-                    >
-                      Enter address manually instead
-                    </button>
                   </div>
                 )}
 
@@ -497,6 +523,17 @@ export default function WMHWWidget() {
 
                 {error && (
                   <p className="text-red-600 text-center text-sm">{error}</p>
+                )}
+
+                {/* Manual entry toggle — placed below submit so dropdown can't cover it */}
+                {!showManualFields && (
+                  <button
+                    type="button"
+                    onClick={() => setShowManualFields(true)}
+                    className="w-full text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline transition-colors text-center"
+                  >
+                    Enter address manually instead
+                  </button>
                 )}
               </form>
             )}
