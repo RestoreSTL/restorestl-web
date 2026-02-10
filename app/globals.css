@@ -57,4 +57,46 @@ h1, h2, h3, h4, h5, h6 {
 gmp-place-autocomplete {
   width: 100%;
   --gmpx-color-primary: #ffc200;
+  --gmpx-color-surface: #ffffff;
+  --gmpx-color-on-surface: #1e293b;
+  --gmpx-color-on-surface-variant: #64748b;
+  background: transparent;
+}
+
+/* Inner input rendered by the element */
+gmp-place-autocomplete input {
+  background: #ffffff !important;
+  color: #1e293b !important;
+}
+
+/* Dropdown list panel */
+gmp-place-autocomplete .pac-container,
+.pac-container {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+  z-index: 9999 !important;
+}
+
+.pac-container .pac-item {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  padding: 0.5rem 0.75rem !important;
+  cursor: pointer !important;
+}
+
+.pac-container .pac-item:hover {
+  background-color: #f8fafc !important;
+}
+
+.pac-container .pac-item .pac-item-query {
+  color: #1e293b !important;
+}
+
+.pac-container .pac-item .pac-matched {
+  color: #1e293b !important;
+  font-weight: 600 !important;
 }

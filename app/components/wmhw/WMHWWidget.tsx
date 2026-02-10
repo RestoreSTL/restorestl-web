@@ -70,11 +70,11 @@ export default function WMHWWidget() {
   const [pathSelected, setPathSelected] = useState<string | null>(null);
   const [reasonForSelling, setReasonForSelling] = useState<string | null>(null);
 
-  const autocompleteContainerRef = useRef<HTMLDivElement>(null);
-  const autocompleteElementRef = useRef<HTMLElement | null>(null);
+  const autocompleteInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const refineTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize Google Maps bootstrap loader + Places PlaceAutocompleteElement
+  // Initialize classic Google Places Autocomplete on a standard <input>
   useEffect(() => {
     if (!GOOGLE_MAPS_KEY) {
       setShowManualFields(true);
@@ -83,65 +83,54 @@ export default function WMHWWidget() {
 
     let cancelled = false;
 
-    // Install the Google Maps inline bootstrap loader (makes importLibrary available)
-    if (!window.google?.maps?.importLibrary) {
-      ((g: Record<string, string>) => {
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        let h: Promise<void> | undefined;
-        let a: HTMLScriptElement;
-        let k: string;
-        const p = 'The Google Maps JavaScript API';
-        const c = 'google';
-        const l = 'importLibrary';
-        const q = '__ib__';
-        const m = document;
-        const b: any = window;
-        b[c] = b[c] || {};
-        const d: any = b[c].maps || (b[c].maps = {});
-        const r = new Set<string>();
-        const e = new URLSearchParams();
-        const u = () =>
-          h ||
-          (h = new Promise<void>(async (f, n) => {
-            await (a = m.createElement('script'));
-            e.set('libraries', [...r] + '');
-            for (k in g)
-              e.set(
-                k.replace(/[A-Z]/g, (t: string) => '_' + t[0].toLowerCase()),
-                g[k]
-              );
-            e.set('callback', c + '.maps.' + q);
-            a.src = 'https://maps.googleapis.com/maps/api/js?' + e;
-            d[q] = f;
-            a.onerror = () => { n(Error(p + ' could not load.')); h = undefined; };
-            a.nonce =
-              m.querySelector<HTMLScriptElement>('script[nonce]')?.nonce || '';
-            m.head.append(a);
-          }));
-        d[l]
-          ? console.warn(p + ' only loads once. Ignoring:', g)
-          : (d[l] = (f: string, ...n: unknown[]) =>
-              r.add(f) && u().then(() => d[l](f, ...n)));
-        /* eslint-enable @typescript-eslint/no-explicit-any */
-      })({ key: GOOGLE_MAPS_KEY, v: 'weekly' });
+    function loadGoogleMapsScript(): Promise<void> {
+      return new Promise((resolve, reject) => {
+        if (window.google?.maps?.places) {
+          resolve();
+          return;
+        }
+
+        const existing = document.querySelector('script[src*="maps.googleapis.com"]');
+        if (existing) {
+          if (window.google?.maps?.places) {
+            resolve();
+            return;
+          }
+          existing.addEventListener('load', () => resolve());
+          existing.addEventListener('error', () => reject(new Error('Google Maps script failed')));
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Google Maps script failed to load'));
+        document.head.appendChild(script);
+      });
     }
 
     async function initAutocomplete() {
-      if (cancelled || !autocompleteContainerRef.current) return;
+      await loadGoogleMapsScript();
+
+      if (cancelled || !autocompleteInputRef.current) return;
 
       try {
-        const { PlaceAutocompleteElement } = await google.maps.importLibrary('places') as google.maps.PlacesLibrary;
+        const ac = new window.google.maps.places.Autocomplete(
+          autocompleteInputRef.current,
+          {
+            componentRestrictions: { country: 'us' },
+            types: ['address'],
+            fields: ['address_components', 'formatted_address'],
+          }
+        );
 
-        if (cancelled || !autocompleteContainerRef.current) return;
+        autocompleteRef.current = ac;
 
-        const autocomplete = new PlaceAutocompleteElement({
-          componentRestrictions: { country: 'us' },
-          types: ['address'],
-        });
-
-        autocomplete.addEventListener('gmp-placeselect', async (event) => {
-          const place = (event as any).place;
-          await place.fetchFields({ fields: ['addressComponents', 'formattedAddress'] });
+        ac.addListener('place_changed', () => {
+          const place = ac.getPlace();
+          if (!place.address_components) return;
 
           let streetNumber = '';
           let route = '';
@@ -149,13 +138,13 @@ export default function WMHWWidget() {
           let state = '';
           let zip = '';
 
-          for (const comp of place.addressComponents) {
+          for (const comp of place.address_components) {
             const types = comp.types;
-            if (types.includes('street_number')) streetNumber = comp.longText;
-            if (types.includes('route')) route = comp.shortText;
-            if (types.includes('locality')) city = comp.longText;
-            if (types.includes('administrative_area_level_1')) state = comp.shortText;
-            if (types.includes('postal_code')) zip = comp.longText;
+            if (types.includes('street_number')) streetNumber = comp.long_name;
+            if (types.includes('route')) route = comp.short_name;
+            if (types.includes('locality')) city = comp.long_name;
+            if (types.includes('administrative_area_level_1')) state = comp.short_name;
+            if (types.includes('postal_code')) zip = comp.long_name;
           }
 
           if (!route || !city || !state) return;
@@ -168,50 +157,13 @@ export default function WMHWWidget() {
           };
 
           setAddress(parsed);
-          setAddressDisplay(place.formattedAddress || '');
+          setAddressDisplay(place.formatted_address || '');
           setError(undefined);
         });
 
-        // Clear any previous element in container
-        autocompleteContainerRef.current.innerHTML = '';
-        autocompleteContainerRef.current.appendChild(autocomplete);
-        autocompleteElementRef.current = autocomplete;
-
-        // Fix Shadow DOM styling — inject white background into the shadow root
-        // The gmp-place-autocomplete element uses Shadow DOM, so external CSS can't reach it
-        const injectShadowStyles = () => {
-          const shadowRoot = autocomplete.shadowRoot;
-          if (shadowRoot) {
-            const style = document.createElement('style');
-            style.textContent = `
-              :host {
-                background: transparent !important;
-              }
-              input {
-                background-color: #ffffff !important;
-                color: #1e293b !important;
-                border: none !important;
-                outline: none !important;
-                font-size: 1rem !important;
-                padding: 0.75rem 0.5rem !important;
-                width: 100% !important;
-              }
-              input::placeholder {
-                color: #94a3b8 !important;
-              }
-            `;
-            shadowRoot.appendChild(style);
-          }
-        };
-
-        // Try immediately, then retry after a short delay in case shadow DOM isn't ready yet
-        injectShadowStyles();
-        setTimeout(injectShadowStyles, 100);
-        setTimeout(injectShadowStyles, 500);
-
         setAutocompleteReady(true);
       } catch (err) {
-        console.error('Failed to init PlaceAutocompleteElement', err);
+        console.error('Failed to init Google Places Autocomplete', err);
         if (!cancelled) setShowManualFields(true);
       }
     }
@@ -222,6 +174,9 @@ export default function WMHWWidget() {
 
     return () => {
       cancelled = true;
+      if (autocompleteRef.current) {
+        google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      }
     };
   }, []);
 
@@ -438,7 +393,13 @@ export default function WMHWWidget() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </div>
-                      <div ref={autocompleteContainerRef} className="flex-1 min-w-0 py-1 px-2 bg-white" />
+                      <input
+                        ref={autocompleteInputRef}
+                        type="text"
+                        placeholder="Enter your property address"
+                        className="flex-1 min-w-0 bg-white text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] px-3 py-3 border-none outline-none rounded-r-lg"
+                        autoComplete="off"
+                      />
                     </div>
                     {address.street_address && (
                       <div className="mt-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 flex items-center gap-2">

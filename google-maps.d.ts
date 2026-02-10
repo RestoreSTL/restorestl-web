@@ -7,12 +7,23 @@ export {};
 
 declare global {
   namespace google.maps {
-    function importLibrary(name: string): Promise<any>;
-    interface PlacesLibrary {
-      PlaceAutocompleteElement: new (opts?: any) => PlaceAutocompleteElement;
-    }
-    interface PlaceAutocompleteElement extends HTMLElement {
-      addEventListener(type: 'gmp-placeselect', listener: (e: any) => void): void;
+    namespace places {
+      class Autocomplete {
+        constructor(input: HTMLInputElement, opts?: {
+          componentRestrictions?: { country: string | string[] };
+          types?: string[];
+          fields?: string[];
+        });
+        addListener(event: 'place_changed', handler: () => void): void;
+        getPlace(): {
+          address_components?: Array<{
+            long_name: string;
+            short_name: string;
+            types: string[];
+          }>;
+          formatted_address?: string;
+        };
+      }
     }
     namespace event {
       function clearInstanceListeners(instance: object): void;
