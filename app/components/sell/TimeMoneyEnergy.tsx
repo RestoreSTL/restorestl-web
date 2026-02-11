@@ -2,6 +2,11 @@ export default function TimeMoneyEnergy() {
   return (
     <section className="py-16 md:py-24 bg-[var(--charcoal-deep)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Every seller has three resources.
+          </h2>
+        </div>
         <div className="grid md:grid-cols-3 gap-8">
           {/* TIME */}
           <div className="bg-white rounded-xl shadow-md p-8 text-center">

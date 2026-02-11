@@ -1,34 +1,33 @@
+import WMHWWidget from './wmhw/WMHWWidget';
+
 export default function BrandStatement() {
   return (
     <section className="py-16 md:py-24 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main brand message */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-[var(--text-primary)]">
-            Restoring Homes. Rebuilding Neighborhoods. Creating Opportunity.
-          </h2>
-          <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed max-w-3xl mx-auto">
-            RestoreSTL is a St. Louis team that buys distressed properties, puts
-            local crews to work, and creates homes people are proud to own. This
-            isn&apos;t a side hustle &mdash; it&apos;s a mission.
-          </p>
-        </div>
+        {/* Mission body — no big headline */}
+        <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed text-center mb-16 max-w-3xl mx-auto">
+          RestoreSTL is a St. Louis team that buys distressed properties, puts
+          local crews to work, and creates homes people are proud to own. This
+          isn&apos;t a side hustle &mdash; it&apos;s a mission.
+        </p>
 
         {/* WMHW intro */}
         <div className="text-center mb-12">
-          <h3 className="text-2xl md:text-3xl font-bold mb-4 text-[var(--text-primary)]">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-[var(--text-primary)]">
             Your home has value. You should know what it is.
-          </h3>
+          </h2>
           <p className="text-[var(--text-secondary)] text-lg leading-relaxed max-w-2xl mx-auto">
             Most companies lock this data behind commissions and callbacks. We
             believe you deserve access to real numbers &mdash; no strings
-            attached. We built a tool that gives you an instant property estimate
-            so you can explore your options on your own terms.
+            attached.
           </p>
         </div>
 
-        {/* TIME / ENERGY / MONEY mini cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* TIME / ENERGY / MONEY with lead-in */}
+        <p className="text-center text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-6">
+          Every seller has three resources
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           <div className="bg-[var(--background-gray)] rounded-xl p-6 text-center border border-[var(--border-gray)]">
             <div className="text-[var(--charcoal-deep)] text-3xl mb-3">&#9201;</div>
             <h4 className="text-lg font-bold text-[var(--text-primary)] mb-2">
@@ -59,6 +58,9 @@ export default function BrandStatement() {
             </p>
           </div>
         </div>
+
+        {/* WMHW Widget */}
+        <WMHWWidget />
       </div>
     </section>
   );
