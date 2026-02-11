@@ -6,7 +6,7 @@ export default function BrandStatement() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mission body — no big headline */}
         <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed text-center mb-16 max-w-3xl mx-auto">
-          RestoreSTL is a St. Louis team that buys distressed properties, puts
+          Restore STL is a St. Louis team that buys distressed properties, puts
           local crews to work, and creates homes people are proud to own. This
           isn&apos;t a side hustle &mdash; it&apos;s a mission.
         </p>

@@ -15,7 +15,7 @@ const TEAM = [
     name: 'Kevin Dairaghi',
     role: 'Founder',
     description:
-      'Real estate has been a part of Kevin\u2019s life in a lot of different ways for many years. He founded RestoreSTL to give St. Louis homeowners something the industry won\u2019t \u2014 honest information and real options.',
+      'Real estate has been a part of Kevin\u2019s life in a lot of different ways for many years. He founded Restore STL to give St. Louis homeowners something the industry won\u2019t \u2014 honest information and real options.',
   },
   {
     initials: 'CO',
