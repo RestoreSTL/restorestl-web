@@ -15,10 +15,10 @@ export default function TwoPathComparison() {
     <section id="compare-options" className="py-16 bg-[var(--background-gray)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 text-[var(--text-primary)]">
-          Two Honest Paths to Sell Your Home
+          You Deserve to Know Your Options.
         </h2>
         <p className="text-xl text-[var(--text-secondary)] text-center mb-12 max-w-3xl mx-auto">
-          We believe in transparency. Here&apos;s exactly what each option looks like.
+          These are the most common paths. There are others &mdash; let&apos;s talk.
         </p>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -59,8 +59,8 @@ export default function TwoPathComparison() {
               />
               <ComparisonItem
                 icon="📅"
-                label="Showings"
-                value="None - One walkthrough"
+                label="Process"
+                value="Simple and straightforward"
               />
             </div>
 
@@ -145,12 +145,6 @@ export default function TwoPathComparison() {
           </div>
         </div>
 
-        <div className="text-center mt-12 bg-[var(--charcoal-deep)] p-8 rounded-xl text-white">
-          <h3 className="text-2xl font-bold mb-4">Not Sure Which Path is Right?</h3>
-          <p className="text-lg text-gray-300 mb-6">
-            Get your instant property estimate below. We&apos;ll show you what both options look like for YOUR situation.
-          </p>
-        </div>
       </div>
     </section>
   );

@@ -4,7 +4,7 @@ const steps = [
     title: 'Talk',
     description: 'Tell us your unique situation',
     icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -19,7 +19,7 @@ const steps = [
     title: 'Walk',
     description: 'Casual walkthrough of property',
     icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -34,7 +34,7 @@ const steps = [
     title: 'Sign',
     description: 'Select solution that works',
     icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -49,7 +49,7 @@ const steps = [
     title: 'Close',
     description: 'You pick the date',
     icon: (
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -68,10 +68,10 @@ export default function ProcessSection() {
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-4">
-            Our Process
+            Your Process
           </h2>
           <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
-            Four simple steps from first call to closing day
+            What to expect when you work with us
           </p>
         </div>
 
@@ -82,10 +82,10 @@ export default function ProcessSection() {
               key={step.number}
               className="bg-white rounded-xl p-6 md:p-8 text-center border border-gray-100 hover:shadow-lg transition-shadow duration-200"
             >
-              {/* Number Badge - ALL YELLOW */}
+              {/* Number Badge */}
               <div className="flex justify-center mb-4">
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-[var(--brand-yellow)] to-[#f59e0b] flex items-center justify-center shadow-lg">
-                  <span className="text-xl md:text-2xl font-bold text-white">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-[var(--brand-yellow)] to-[#f59e0b] flex items-center justify-center shadow-lg">
+                  <span className="text-2xl md:text-3xl font-bold text-white">
                     {step.number}
                   </span>
                 </div>

@@ -1,43 +1,18 @@
-import Link from 'next/link';
-
 export default function Hero() {
   return (
     <section className="relative min-h-[600px] md:min-h-[700px] flex items-center justify-center text-white overflow-hidden">
-      {/* Clean gradient background - NO ILLUSTRATIONS */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'radial-gradient(ellipse at center, #2d5a8f 0%, #1e3a5f 50%, #0f172a 100%)',
-        }}
-      />
-
-      {/* Subtle pattern overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.07]"
-        style={{
-          backgroundImage:
-            'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-        }}
-      />
+      {/* Video placeholder — swap for <video> when TICKET-017 delivers */}
+      <div className="absolute inset-0 bg-black" />
 
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-          Simple, Fast Cash for Houses
+        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 leading-tight">
+          RESTORE STL
         </h1>
-        <p className="text-lg sm:text-xl md:text-2xl mb-10 text-gray-200 max-w-2xl mx-auto">
-          Click below to find out how much your house is worth.
+        <p className="text-xl md:text-2xl text-gray-300">
+          We buy houses to restore neighborhoods.
         </p>
-        <Link
-          href="/sell"
-          className="inline-block bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] font-bold text-lg sm:text-xl px-8 py-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl min-h-[44px]"
-        >
-          What&apos;s my house worth?
-        </Link>
       </div>
-
-      {/* Bottom fade for smooth transition to next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent" />
     </section>
   );
 }

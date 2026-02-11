@@ -15,7 +15,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="inline-block text-[var(--brand-yellow)] hover:text-[var(--brand-yellow-hover)] font-medium text-lg underline underline-offset-4 transition-colors duration-200"
           >
-            Book a time to chat.
+            Time to Talk
           </a>
         </div>
 
