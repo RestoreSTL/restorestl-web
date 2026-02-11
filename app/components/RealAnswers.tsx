@@ -2,7 +2,7 @@ import WMHWWidget from './wmhw/WMHWWidget';
 
 export default function RealAnswers() {
   return (
-    <section className="py-16 md:py-24 bg-[#111111]">
+    <section className="py-16 md:py-24 bg-[var(--charcoal-deep)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-12">

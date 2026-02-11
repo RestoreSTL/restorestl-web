@@ -57,7 +57,7 @@ export default function AboutPage() {
       <Navigation />
       <main>
         {/* ── Section 1: Hero ─────────────────────────────────────── */}
-        <section className="relative min-h-[400px] md:min-h-[500px] flex items-center justify-center text-white overflow-hidden">
+        <section className="relative min-h-[300px] md:min-h-[400px] flex items-center justify-center text-white overflow-hidden">
           <div className="absolute inset-0 bg-black" />
           <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
@@ -70,7 +70,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Section 2: The Team ─────────────────────────────────── */}
-        <section className="py-16 md:py-24 bg-black">
+        <section className="py-16 md:py-24 bg-[var(--charcoal-deep)]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-12 text-center">
               The Team
@@ -105,7 +105,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Section 3: Three Pillars ────────────────────────────── */}
-        <section className="py-16 md:py-24 bg-[#0a0a0a]">
+        <section className="py-16 md:py-24 bg-[#111111]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {PILLARS.map((pillar) => (
@@ -145,7 +145,7 @@ export default function AboutPage() {
         </section>
 
         {/* ── Section 5: Join the Team + Sign-off ─────────────────── */}
-        <section className="py-16 md:py-24 bg-black text-center">
+        <section className="py-16 md:py-24 bg-[var(--charcoal-deep)] text-center">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
               Are you exceptional? Want to join our team?

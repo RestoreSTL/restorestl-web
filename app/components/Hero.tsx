@@ -1,6 +1,6 @@
 export default function Hero() {
   return (
-    <section className="relative min-h-[600px] md:min-h-[700px] flex items-center justify-center text-white overflow-hidden">
+    <section className="relative min-h-[350px] md:min-h-[450px] flex items-center justify-center text-white overflow-hidden">
       {/* Video placeholder — swap for <video> when TICKET-017 delivers */}
       <div className="absolute inset-0 bg-black" />
 
