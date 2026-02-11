@@ -7,7 +7,7 @@ export default function Footer() {
         {/* CTA Section */}
         <div className="mb-8">
           <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            Need to sell ASAP?
+            Ready to Talk?
           </h3>
           <a
             href="https://calendly.com/chris-restorestl/15min"

@@ -380,7 +380,7 @@ export default function WMHWWidget() {
                   What&apos;s Your House Worth?
                 </h2>
                 <p className="text-[var(--text-secondary)] text-center mb-6">
-                  Get an instant estimate in 30 seconds
+                  No login. No callbacks. Just real numbers.
                 </p>
 
                 {/* Google Places Autocomplete Field */}
@@ -478,7 +478,7 @@ export default function WMHWWidget() {
                       {loadingMessage || 'Analyzing...'}
                     </span>
                   ) : (
-                    'Get Instant Estimate'
+                    'See My Home\u2019s Value'
                   )}
                 </button>
 
@@ -563,13 +563,13 @@ export default function WMHWWidget() {
 
                 <div className="space-y-3 pt-2">
                   <p className="text-center text-sm text-[var(--text-secondary)]">
-                    Want a personalized cash offer or expert analysis?
+                    Want to explore your options with a real person?
                   </p>
                   <button
                     onClick={() => setStep('refine')}
                     className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
                   >
-                    Continue for Expert Analysis
+                    Tell Us About Your Situation
                   </button>
                   <button
                     onClick={() => {
@@ -591,7 +591,7 @@ export default function WMHWWidget() {
             {step === 'refine' && (
               <form onSubmit={onRefineSubmit} className="space-y-6">
                 <h2 className="text-2xl font-bold text-center text-[var(--text-primary)]">
-                  Get Your Personalized Offer
+                  Help Us Help You
                 </h2>
 
                 {/* Condition Slider */}
@@ -644,7 +644,7 @@ export default function WMHWWidget() {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm font-medium text-[var(--text-primary)]">Tell us about your situation</p>
-                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">This helps us prepare the right options for you.</p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">This helps us prepare the right information for you.</p>
                   </div>
 
                   {/* Timeline Picker */}
@@ -745,7 +745,7 @@ export default function WMHWWidget() {
                     type="tel"
                   />
                   <p className="col-span-2 text-xs text-[var(--text-secondary)] text-center">
-                    * Provide at least email or phone number
+                    How should we reach you?
                   </p>
                 </div>
 
@@ -763,7 +763,7 @@ export default function WMHWWidget() {
                       Submitting...
                     </span>
                   ) : (
-                    'Get My Cash Offer'
+                    'Get My Free Analysis'
                   )}
                 </button>
               </form>
@@ -773,7 +773,7 @@ export default function WMHWWidget() {
             {step === 'result' && (
               <div className="text-center space-y-5">
                 <div className="text-5xl mb-2">🏠</div>
-                <h3 className="text-2xl font-bold text-[var(--text-primary)]">Your Estimate Is Ready!</h3>
+                <h3 className="text-2xl font-bold text-[var(--text-primary)]">You&apos;re All Set.</h3>
 
                 {valuation?.estimated_value && (
                   <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-[var(--brand-yellow)] rounded-xl p-5 text-center">
@@ -791,12 +791,12 @@ export default function WMHWWidget() {
 
                 <div className="border-t border-gray-200 pt-5 space-y-3">
                   <p className="text-lg font-semibold text-[var(--text-primary)]">
-                    Want a Free Property Analysis Report?
+                    We&apos;re Putting Your Report Together.
                   </p>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                    Book a quick 15-minute call and we&apos;ll send you a detailed report
-                    with comparable sales, repair estimates, and your home&apos;s full
-                    market breakdown — before the call.
+                    We&apos;re building a detailed report with comparable sales, market data,
+                    and your options. Book a quick call and we&apos;ll walk through everything
+                    together &mdash; no pressure, no obligation.
                   </p>
                   <a
                     href="/book"
@@ -806,10 +806,10 @@ export default function WMHWWidget() {
                     }}
                     className="inline-block w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
                   >
-                    Book My Free Analysis
+                    Time to Talk
                   </a>
                   <p className="text-xs text-[var(--text-secondary)]">
-                    No pressure, no obligation. Just real numbers for your property.
+                    Your friends in real estate.
                   </p>
                 </div>
               </div>
