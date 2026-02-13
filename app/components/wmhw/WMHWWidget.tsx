@@ -200,6 +200,16 @@ export default function WMHWWidget() {
     };
   }, [step]);
 
+  // Scroll widget into view on step transitions (not initial render)
+  useEffect(() => {
+    if (step === 'preview' || step === 'result') {
+      const timeout = setTimeout(() => {
+        document.getElementById('instant-offer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [step]);
+
   const fetchValuation = useCallback(async (addressInput: AddressInput) => {
     const addressStr = `${addressInput.street_address}, ${addressInput.city}, ${addressInput.state} ${addressInput.zip_code}`;
 
