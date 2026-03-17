@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Restore STL — Private Lending</title>
-<meta name="description" content="Earn 8-12% annual returns secured by St. Louis real estate. Private lending program by Restore STL.">
+<title>Restore STL &#8212; Private Lending</title>
+<meta name="description" content="Earn 10% annual returns secured by St. Louis real estate.">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RSTL Invest">
-<meta property="og:title" content="Restore STL — Private Lending Program">
-<meta property="og:description" content="Earn 8-12% annual returns secured by St. Louis real estate.">
+<meta property="og:title" content="Restore STL &#8212; Private Lending Program">
+<meta property="og:description" content="Earn 10% annual returns secured by St. Louis real estate.">
 <meta property="og:type" content="website">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --black:#000;--dark:#0a0a0a;--card:#111;--card2:#1a1a1a;
+  --black:#000;--card:#111;--card2:#1a1a1a;
   --yellow:#ffc200;--green:#0a8754;--green-light:#0dba73;
   --slate:#94a3b8;--slate-dim:#475569;--white:#f8fafc;
   --text:#cbd5e1;--border:rgba(255,255,255,.08);
 }
 html{scroll-behavior:smooth;scroll-snap-type:y proximity;-webkit-overflow-scrolling:touch}
 body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:16px;line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
 .slide{min-height:100dvh;padding:3rem 1.5rem;display:flex;flex-direction:column;
   justify-content:center;position:relative;scroll-snap-align:start}
@@ -33,13 +33,12 @@ body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;
   height:1px;background:var(--border)}
 
 .scroll-hint{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:4px;opacity:.4;
-  animation:bob 2s ease-in-out infinite}
+  display:flex;flex-direction:column;align-items:center;gap:4px;opacity:.35;
+  animation:bob 2s ease-in-out infinite;transition:opacity .4s}
 @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
 .scroll-hint span{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--slate)}
-.scroll-hint .chevrons{display:flex;flex-direction:column;align-items:center;gap:-2px}
-.scroll-hint .chevrons i{width:16px;height:16px;border-right:1.5px solid var(--slate);
-  border-bottom:1.5px solid var(--slate);transform:rotate(45deg)}
+.scroll-hint .chevrons i{display:block;width:14px;height:14px;border-right:1.5px solid var(--slate);
+  border-bottom:1.5px solid var(--slate);transform:rotate(45deg);margin:0 auto}
 
 .nav-dots{position:fixed;right:12px;top:50%;transform:translateY(-50%);
   display:flex;flex-direction:column;gap:10px;z-index:100}
@@ -48,59 +47,67 @@ body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;
 .nav-dots a.active{background:var(--yellow);height:18px;border-radius:3px}
 
 h1{font-family:'Montserrat',sans-serif;font-weight:800;letter-spacing:-.03em}
-h2{font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:-.02em}
-h3{font-family:'Montserrat',sans-serif;font-weight:600;letter-spacing:-.01em}
+h2{font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:-.02em;color:var(--white)}
+h3{font-family:'Montserrat',sans-serif;font-weight:600;letter-spacing:-.01em;color:var(--white)}
 .label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--slate);font-weight:500}
 .yellow{color:var(--yellow)}
 .green{color:var(--green-light)}
-.dim{color:var(--slate)}
 
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
 .card2{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1rem}
 
-.stat{text-align:center}
-.stat-num{font-family:'Montserrat',sans-serif;font-weight:800;font-size:2.5rem;
-  letter-spacing:-.03em;line-height:1.1}
-.stat-label{font-size:13px;color:var(--slate);margin-top:4px}
-
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-
-.step{display:flex;gap:14px;align-items:flex-start}
-.step-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-family:'Montserrat',sans-serif;font-weight:700;
-  font-size:15px;flex-shrink:0;border:1.5px solid var(--yellow);color:var(--yellow)}
-.step-content h3{font-size:16px;color:var(--white);margin-bottom:2px}
-.step-content p{font-size:14px;color:var(--slate);line-height:1.4}
-
 .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
   border-radius:100px;font-size:13px;font-weight:500}
-.pill-yellow{background:rgba(255,194,0,.12);color:var(--yellow);border:1px solid rgba(255,194,0,.2)}
-.pill-green{background:rgba(10,135,84,.12);color:var(--green-light);border:1px solid rgba(10,135,84,.2)}
+.pill-yellow{background:rgba(255,194,0,.1);color:var(--yellow);border:1px solid rgba(255,194,0,.18)}
+.pill-green{background:rgba(10,135,84,.1);color:var(--green-light);border:1px solid rgba(10,135,84,.18)}
 
-.deal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+/* Process steps */
+.process{counter-reset:step}
+.p-step{display:flex;gap:16px;align-items:flex-start;position:relative;padding-bottom:28px}
+.p-step:last-child{padding-bottom:0}
+.p-step::before{counter-increment:step;content:counter(step);
+  width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;flex-shrink:0;
+  border:1.5px solid var(--yellow);color:var(--yellow);position:relative;z-index:1;
+  background:var(--black)}
+.p-step:not(:last-child)::after{content:'';position:absolute;left:18px;top:42px;
+  width:1.5px;height:calc(100% - 42px);background:var(--border)}
+.p-step .p-body h3{font-size:16px;margin-bottom:3px}
+.p-step .p-body p{font-size:14px;color:var(--slate);line-height:1.5}
+
+/* Security features */
+.sec-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0;
+  border-bottom:1px solid var(--border)}
+.sec-item:last-child{border-bottom:none}
+.sec-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.sec-item h3{font-size:15px;margin-bottom:2px}
+.sec-item p{font-size:13px;color:var(--slate);line-height:1.45}
+
+/* Deal card */
 .deal-row{display:flex;justify-content:space-between;padding:10px 0;
   border-bottom:1px solid var(--border)}
 .deal-row:last-child{border-bottom:none}
 .deal-row .dl{font-size:14px;color:var(--slate)}
 .deal-row .dv{font-size:15px;color:var(--white);font-weight:500;font-family:'Montserrat',sans-serif}
-.deal-highlight{background:rgba(255,194,0,.06);border:1px solid rgba(255,194,0,.15);
+.deal-highlight{background:rgba(255,194,0,.06);border:1px solid rgba(255,194,0,.12);
   border-radius:12px;padding:1rem;margin-top:1rem;text-align:center}
-.deal-highlight .big{font-family:'Montserrat',sans-serif;font-size:2rem;
-  font-weight:800;color:var(--yellow)}
+.deal-highlight .big{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:800;color:var(--yellow)}
 .deal-highlight .sub{font-size:13px;color:var(--slate);margin-top:2px}
 
-.compare-row{margin-bottom:14px}
-.compare-label{display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px}
+/* Risk table */
+.risk-row{padding:14px 0;border-bottom:1px solid var(--border)}
+.risk-row:last-child{border-bottom:none}
+.risk-q{font-size:15px;color:var(--white);font-weight:500;margin-bottom:4px}
+.risk-a{font-size:14px;color:var(--slate);line-height:1.5}
+
+/* Compare */
+.compare-row{margin-bottom:16px}
+.compare-label{display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px}
 .compare-bar{height:8px;border-radius:4px;background:var(--card2);overflow:hidden}
-.compare-fill{height:100%;border-radius:4px;transition:width 1s ease}
+.compare-fill{height:100%;border-radius:4px}
 
-.edge-card{padding:1.25rem;border-left:3px solid var(--yellow)}
-.edge-card h3{font-size:15px;color:var(--white);margin-bottom:4px}
-.edge-card p{font-size:13px;color:var(--slate);line-height:1.5}
-.edge-num{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.75rem;
-  color:var(--yellow);margin-bottom:6px;line-height:1}
-
+/* Contact */
 .contact-btn{display:block;width:100%;padding:16px;border-radius:12px;
   border:none;font-family:'Montserrat',sans-serif;font-weight:700;
   font-size:16px;cursor:pointer;text-decoration:none;text-align:center;
@@ -109,19 +116,11 @@ h3{font-family:'Montserrat',sans-serif;font-weight:600;letter-spacing:-.01em}
 .btn-primary{background:var(--yellow);color:var(--black)}
 .btn-outline{background:transparent;color:var(--yellow);border:1.5px solid var(--yellow);margin-top:10px}
 
-.glow-y{box-shadow:0 0 60px rgba(255,194,0,.06)}
-.glow-g{box-shadow:0 0 60px rgba(10,135,84,.06)}
-
-.progress{position:fixed;top:0;left:0;height:2px;background:var(--yellow);
-  z-index:200;transition:width .3s ease}
-
-.reveal{opacity:0;transform:translateY(20px);transition:all .6s ease}
+.progress{position:fixed;top:0;left:0;height:2px;background:var(--yellow);z-index:200;transition:width .3s ease}
+.reveal{opacity:0;transform:translateY(18px);transition:all .5s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
 
-@media(min-width:480px){
-  .slide{padding:3rem 2.5rem}
-  .stat-num{font-size:3rem}
-}
+@media(min-width:480px){.slide{padding:3rem 2.5rem}}
 </style>
 </head>
 <body>
@@ -129,20 +128,22 @@ h3{font-family:'Montserrat',sans-serif;font-weight:600;letter-spacing:-.01em}
 <div class="progress" id="progress"></div>
 <nav class="nav-dots" id="navDots"></nav>
 
-<!-- SLIDE 1: COVER -->
-<section class="slide" id="s0" style="justify-content:center;text-align:center">
+<!-- ===== SLIDE 1: COVER ===== -->
+<section class="slide" id="s0" style="text-align:center">
   <div class="reveal">
-    <div class="label" style="margin-bottom:1.5rem">Private lending program</div>
-    <h1 style="font-size:2.75rem;line-height:1.05">
+    <h1 style="font-size:2.75rem;line-height:1.05;margin-bottom:1.25rem">
       <span style="color:var(--yellow)">Restore</span><span style="color:var(--slate)">STL</span>
     </h1>
-    <p style="font-size:1.125rem;color:var(--slate);margin-top:1rem;max-width:320px;margin-inline:auto">
-      Earn 8&#8211;12% annual returns secured by St. Louis real estate
+    <p style="font-size:1.25rem;color:var(--white);font-weight:500;max-width:300px;margin:0 auto .5rem">
+      Earn 10% on your money.<br>Secured by real estate.
     </p>
-    <div style="display:flex;gap:10px;justify-content:center;margin-top:2rem;flex-wrap:wrap">
-      <span class="pill pill-yellow">Asset-backed</span>
-      <span class="pill pill-green">30 days to 6 months</span>
-      <span class="pill pill-yellow">No monthly payments</span>
+    <p style="font-size:15px;color:var(--slate);max-width:280px;margin:0 auto 2rem">
+      We help people buy and sell homes in St. Louis. You fund the deal. We do the work. You get paid.
+    </p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <span class="pill pill-yellow">Simple</span>
+      <span class="pill pill-yellow">Secured</span>
+      <span class="pill pill-yellow">Transparent</span>
     </div>
   </div>
   <div class="scroll-hint">
@@ -151,375 +152,297 @@ h3{font-family:'Montserrat',sans-serif;font-weight:600;letter-spacing:-.01em}
   </div>
 </section>
 
-<!-- SLIDE 2: THE OPPORTUNITY -->
+<!-- ===== SLIDE 2: THE PROBLEM (for the lender) ===== -->
 <section class="slide" id="s1">
   <div class="reveal">
-    <div class="label" style="margin-bottom:1rem">The opportunity</div>
-    <h2 style="font-size:1.75rem;color:var(--white);margin-bottom:1.5rem;line-height:1.15">
-      St. Louis has one of the highest concentrations of distressed housing in the country
+    <div class="label" style="margin-bottom:1rem">The problem</div>
+    <h2 style="font-size:1.6rem;line-height:1.2;margin-bottom:1.25rem">
+      Your money is sitting in an account earning 4%. The stock market is volatile. You want something better.
     </h2>
-    <div class="grid-3" style="margin-bottom:1.5rem">
-      <div class="stat">
-        <div class="stat-num yellow">30K+</div>
-        <div class="stat-label">Vacant properties</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num yellow">5</div>
-        <div class="stat-label">Public record sources</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num yellow">3,600+</div>
-        <div class="stat-label">Leads analyzed</div>
-      </div>
+    <div class="card" style="margin-bottom:1rem">
+      <p style="font-size:15px;line-height:1.65;color:var(--text)">
+        Private lending lets you earn <strong style="color:var(--yellow)">10% annual returns</strong> backed 
+        by a physical property you can drive to and touch. No stock tickers. No market swings. 
+        A house, a deed, and a clear payoff date.
+      </p>
     </div>
-    <div class="card">
-      <p style="font-size:14px;line-height:1.6">
-        Every vacant, tax-delinquent, or condemned property represents a homeowner who needs help 
-        and an investor opportunity. Most investors guess. <strong style="color:var(--white)">We use data to find the best ones first.</strong>
+    <div class="card" style="border-left:3px solid var(--yellow)">
+      <p style="font-size:14px;color:var(--slate);line-height:1.5">
+        <strong style="color:var(--white)">You are not investing in us.</strong> You are lending against a specific property. 
+        Your loan is secured by a recorded deed of trust. You are first in line to get paid.
       </p>
     </div>
   </div>
 </section>
 
-<!-- SLIDE 3: WHO WE ARE -->
+<!-- ===== SLIDE 3: HOW IT WORKS ===== -->
 <section class="slide" id="s2">
   <div class="reveal">
-    <div class="label" style="margin-bottom:1rem">Who we are</div>
-    <h2 style="font-size:1.75rem;color:var(--white);margin-bottom:1.5rem;line-height:1.15">
-      25 years of St. Louis real estate experience
+    <div class="label" style="margin-bottom:1rem">How it works</div>
+    <h2 style="font-size:1.6rem;line-height:1.2;margin-bottom:1.5rem">
+      The process from start to payoff
     </h2>
-    <div class="card glow-y" style="margin-bottom:1rem">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:1rem">
-        <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,194,0,.15);
-          display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;
-          font-weight:800;font-size:20px;color:var(--yellow);flex-shrink:0">KD</div>
-        <div>
-          <h3 style="font-size:17px;color:var(--white)">Kevin Dairaghi</h3>
-          <p style="font-size:13px;color:var(--slate)">Founder &middot; Licensed eXp Agent</p>
+    <div class="process">
+      <div class="p-step">
+        <div class="p-body">
+          <h3>We find a property</h3>
+          <p>Our team identifies a distressed property in St. Louis with strong profit potential and presents you the deal.</p>
         </div>
       </div>
-      <p style="font-size:14px;line-height:1.6">
-        Hundreds of transactions across the St. Louis metro. Every neighborhood, every deal type. 
-        When you lend with Restore STL, Kevin personally oversees every acquisition, renovation, and sale.
-      </p>
-    </div>
-    <div class="grid-2">
-      <div class="card2" style="text-align:center">
-        <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.5rem;color:var(--white)">25+</div>
-        <div style="font-size:12px;color:var(--slate)">Years in RE</div>
+      <div class="p-step">
+        <div class="p-body">
+          <h3>You review the numbers</h3>
+          <p>Purchase price, repair costs, after-repair value, your loan amount, and your expected return. All transparent.</p>
+        </div>
       </div>
-      <div class="card2" style="text-align:center">
-        <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.5rem;color:var(--white)">STL</div>
-        <div style="font-size:12px;color:var(--slate)">Born and raised</div>
+      <div class="p-step">
+        <div class="p-body">
+          <h3>You fund through the title company</h3>
+          <p>Your money goes directly to the title company &#8212; not to us. They handle the closing, just like any real estate transaction.</p>
+        </div>
+      </div>
+      <div class="p-step">
+        <div class="p-body">
+          <h3>Your lien is recorded</h3>
+          <p>A deed of trust is recorded in your name. You are in <strong style="color:var(--yellow)">1st position</strong> on the property. This is your security.</p>
+        </div>
+      </div>
+      <div class="p-step">
+        <div class="p-body">
+          <h3>We do the work</h3>
+          <p>We renovate and sell the property, or assign the contract to another buyer. You get photo updates throughout.</p>
+        </div>
+      </div>
+      <div class="p-step">
+        <div class="p-body">
+          <h3>You get paid at closing</h3>
+          <p>When the property sells, the title company pays you first &#8212; your principal plus 10% annualized interest. No monthly payments to track.</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- SLIDE 4: HOW IT WORKS -->
+<!-- ===== SLIDE 4: YOUR SECURITY ===== -->
 <section class="slide" id="s3">
   <div class="reveal">
-    <div class="label" style="margin-bottom:1rem">How it works</div>
-    <h2 style="font-size:1.75rem;color:var(--white);margin-bottom:1.5rem;line-height:1.15">
-      Simple, secured, transparent
+    <div class="label" style="margin-bottom:1rem">Your security</div>
+    <h2 style="font-size:1.6rem;line-height:1.2;margin-bottom:1.25rem">
+      You are first priority on every deal
     </h2>
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <h3>You lend</h3>
-          <p>Your capital funds the acquisition and renovation of a distressed property</p>
+    <div class="card">
+      <div class="sec-item">
+        <div class="sec-icon" style="background:rgba(255,194,0,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffc200" stroke-width="2" stroke-linecap="round"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>
+        </div>
+        <div>
+          <h3>1st position deed of trust</h3>
+          <p>Recorded at the county. You are the first lien holder on the property. Before us, before anyone.</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <h3>We secure it</h3>
-          <p>Promissory note + deed of trust recorded against the property. You hold the asset.</p>
+      <div class="sec-item">
+        <div class="sec-icon" style="background:rgba(10,135,84,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0dba73" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <h3>Attorney-drafted promissory note</h3>
+          <p>Your terms, rate, and repayment schedule in a legal contract reviewed by our attorney.</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <h3>We execute</h3>
-          <p>Our team acquires, renovates, and sells or assigns the property. You get photo updates throughout.</p>
+      <div class="sec-item">
+        <div class="sec-icon" style="background:rgba(255,194,0,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffc200" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+        </div>
+        <div>
+          <h3>Title company handles your money</h3>
+          <p>Your funds go directly to the title company at closing. They pay you directly when the deal closes. Your money never sits in our account.</p>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-content">
-          <h3>You get paid</h3>
-          <p>Principal + interest returned at closing. No monthly payments. Assignments close in 30&#8211;60 days. Flips run 4&#8211;6 months.</p>
+      <div class="sec-item">
+        <div class="sec-icon" style="background:rgba(10,135,84,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0dba73" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div>
+          <h3>Open-book transparency</h3>
+          <p>You see the property, the numbers, and the progress. Photos at every milestone. No surprises.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- SLIDE 5: OUR EDGE -->
+<!-- ===== SLIDE 5: WHY THIS IS DIFFERENT ===== -->
 <section class="slide" id="s4">
   <div class="reveal">
-    <div class="label" style="margin-bottom:1rem">Our edge</div>
-    <h2 style="font-size:1.75rem;color:var(--white);margin-bottom:1.25rem;line-height:1.15">
-      Why lenders choose us
+    <div class="label" style="margin-bottom:1rem">Real estate vs. the market</div>
+    <h2 style="font-size:1.6rem;line-height:1.2;margin-bottom:1.25rem">
+      Your money is backed by something you can see
     </h2>
     <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="card edge-card">
-        <div class="edge-num">3,600+</div>
-        <h3>Leads scored automatically</h3>
-        <p>Advanced analysis tools score every property across MLS listings and 5 public record sources. We find deals others miss.</p>
+      <div class="card" style="border-left:3px solid var(--yellow)">
+        <h3 style="font-size:14px;margin-bottom:6px">Stocks and mutual funds</h3>
+        <p style="font-size:14px;color:var(--slate);line-height:1.5">
+          No hard asset behind your investment. Value is based on market sentiment. 
+          You can&#8217;t drive to your portfolio and look at it. If the market drops 20%, your money drops 20%.
+        </p>
       </div>
-      <div class="card edge-card" style="border-left-color:var(--green-light)">
-        <div class="edge-num" style="color:var(--green-light)">Seconds</div>
-        <h3>Instant property analysis</h3>
-        <p>Repair estimates, comparable sales, and investment returns calculated instantly. We move faster than the competition.</p>
-      </div>
-      <div class="card edge-card">
-        <div class="edge-num">100%</div>
-        <h3>Transparent updates</h3>
-        <p>Photo updates at every milestone. You always know where your money is and what it&#8217;s doing.</p>
-      </div>
-      <div class="card edge-card" style="border-left-color:var(--green-light)">
-        <div class="edge-num" style="color:var(--green-light)">Local</div>
-        <h3>St. Louis expertise</h3>
-        <p>We know every neighborhood, every block. 25 years of boots-on-the-ground knowledge powers every decision.</p>
+      <div class="card" style="border-left:3px solid var(--green-light)">
+        <h3 style="font-size:14px;color:var(--green-light);margin-bottom:6px">Private real estate lending</h3>
+        <p style="font-size:14px;color:var(--slate);line-height:1.5">
+          Your loan is secured by a physical house at a specific address. You hold a recorded lien. 
+          If something goes wrong, <strong style="color:var(--white)">you own the property</strong>. 
+          The stock market has nothing like that.
+        </p>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- SLIDE 6: DEAL EXAMPLE - WHOLESALE -->
-<section class="slide" id="s5">
-  <div class="reveal">
-    <div class="label" style="margin-bottom:1rem">Pro forma example</div>
-    <h2 style="font-size:1.5rem;color:var(--white);margin-bottom:1.25rem;line-height:1.15">
-      Low-tier wholesale assignment
-    </h2>
-    <div class="card glow-y">
-      <div class="deal-header">
-        <span class="pill pill-yellow" style="font-size:12px">Assignment &middot; 45-day hold</span>
-      </div>
-      <div class="deal-row"><span class="dl">Purchase price</span><span class="dv">$55,000</span></div>
-      <div class="deal-row"><span class="dl">Light rehab / holding</span><span class="dv">$12,000</span></div>
-      <div class="deal-row"><span class="dl">Total loan needed</span><span class="dv yellow" style="font-size:17px">$67,000</span></div>
-      <div class="deal-row"><span class="dl">After-repair value</span><span class="dv">$135,000</span></div>
-      <div class="deal-row"><span class="dl">Assignment fee</span><span class="dv green">$18,000</span></div>
-      <div class="deal-highlight">
-        <div style="font-size:12px;color:var(--slate);margin-bottom:2px">Your return at 10% annual</div>
-        <div class="big">$826</div>
-        <div class="sub">On $67K over 45 days &middot; principal returned at closing</div>
-      </div>
-    </div>
-    <p style="font-size:12px;color:var(--slate-dim);margin-top:10px;text-align:center">
-      Pro forma illustration. Actual returns vary by deal.
-    </p>
-  </div>
-</section>
-
-<!-- SLIDE 7: DEAL EXAMPLE - FLIP -->
-<section class="slide" id="s6">
-  <div class="reveal">
-    <div class="label" style="margin-bottom:1rem">Pro forma example</div>
-    <h2 style="font-size:1.5rem;color:var(--white);margin-bottom:1.25rem;line-height:1.15">
-      Mid-tier renovation flip
-    </h2>
-    <div class="card glow-g">
-      <div class="deal-header">
-        <span class="pill pill-green" style="font-size:12px">Flip &middot; ~5-month hold</span>
-      </div>
-      <div class="deal-row"><span class="dl">Purchase price</span><span class="dv">$110,000</span></div>
-      <div class="deal-row"><span class="dl">Renovation + holding</span><span class="dv">$55,000</span></div>
-      <div class="deal-row"><span class="dl">Total loan needed</span><span class="dv yellow" style="font-size:17px">$165,000</span></div>
-      <div class="deal-row"><span class="dl">After-repair value</span><span class="dv">$265,000</span></div>
-      <div class="deal-row"><span class="dl">Net profit (after costs)</span><span class="dv green">$52,000</span></div>
-      <div class="deal-highlight" style="background:rgba(10,135,84,.06);border-color:rgba(10,135,84,.15)">
-        <div style="font-size:12px;color:var(--slate);margin-bottom:2px">Your return at 10% annual</div>
-        <div class="big" style="color:var(--green-light)">$6,781</div>
-        <div class="sub">On $165K over ~5 months &middot; principal returned at closing</div>
-      </div>
-    </div>
-    <p style="font-size:12px;color:var(--slate-dim);margin-top:10px;text-align:center">
-      Pro forma illustration. Actual returns vary by deal.
-    </p>
-  </div>
-</section>
-
-<!-- SLIDE 8: YOUR SECURITY -->
-<section class="slide" id="s7">
-  <div class="reveal">
-    <div class="label" style="margin-bottom:1rem">Your security</div>
-    <h2 style="font-size:1.75rem;color:var(--white);margin-bottom:1.25rem;line-height:1.15">
-      Your capital is secured by real property
-    </h2>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="card2">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,194,0,.1);
-            display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffc200" stroke-width="2" stroke-linecap="round"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/></svg>
-          </div>
-          <div>
-            <h3 style="font-size:15px;color:var(--white)">Deed of trust</h3>
-            <p style="font-size:13px;color:var(--slate)">Recorded against the property. If anything goes wrong, you hold the asset.</p>
-          </div>
-        </div>
-      </div>
-      <div class="card2">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:40px;height:40px;border-radius:10px;background:rgba(10,135,84,.1);
-            display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0dba73" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          </div>
-          <div>
-            <h3 style="font-size:15px;color:var(--white)">Promissory note</h3>
-            <p style="font-size:13px;color:var(--slate)">Attorney-drafted legal agreement with defined terms, rate, and repayment schedule.</p>
-          </div>
-        </div>
-      </div>
-      <div class="card2">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,194,0,.1);
-            display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffc200" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
-          <div>
-            <h3 style="font-size:15px;color:var(--white)">Short hold periods</h3>
-            <p style="font-size:13px;color:var(--slate)">Assignments close in 30&#8211;60 days. Flips run 4&#8211;6 months. Your capital isn&#8217;t locked up for years.</p>
-          </div>
-        </div>
-      </div>
-      <div class="card2">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:40px;height:40px;border-radius:10px;background:rgba(10,135,84,.1);
-            display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0dba73" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </div>
-          <div>
-            <h3 style="font-size:15px;color:var(--white)">Full transparency</h3>
-            <p style="font-size:13px;color:var(--slate)">Photo updates, progress reports, and open-book financials on every deal.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SLIDE 9: RETURNS COMPARISON -->
-<section class="slide" id="s8">
-  <div class="reveal">
-    <div class="label" style="margin-bottom:1rem">Returns</div>
-    <h2 style="font-size:1.75rem;color:var(--white);margin-bottom:1.5rem;line-height:1.15">
-      How private lending compares
-    </h2>
-    <div style="display:flex;flex-direction:column;gap:18px;margin-bottom:1.5rem">
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:1.5rem">
       <div class="compare-row">
         <div class="compare-label">
-          <span style="color:var(--white);font-weight:500">Restore STL</span>
-          <span class="yellow" style="font-weight:600">8 &#8211; 12%</span>
+          <span style="color:var(--white);font-weight:500">Private lending (Restore STL)</span>
+          <span class="yellow" style="font-weight:600">10%</span>
         </div>
         <div class="compare-bar"><div class="compare-fill" style="width:100%;background:var(--yellow)"></div></div>
       </div>
       <div class="compare-row">
-        <div class="compare-label">
-          <span>S&amp;P 500 (avg)</span>
-          <span>~10%</span>
-        </div>
-        <div class="compare-bar"><div class="compare-fill" style="width:83%;background:var(--slate-dim)"></div></div>
+        <div class="compare-label"><span>High-yield savings</span><span>~4.5%</span></div>
+        <div class="compare-bar"><div class="compare-fill" style="width:45%;background:var(--slate-dim)"></div></div>
       </div>
       <div class="compare-row">
-        <div class="compare-label">
-          <span>High-yield savings</span>
-          <span>~4.5%</span>
-        </div>
-        <div class="compare-bar"><div class="compare-fill" style="width:38%;background:var(--slate-dim)"></div></div>
-      </div>
-      <div class="compare-row">
-        <div class="compare-label">
-          <span>CDs (12-month)</span>
-          <span>~3.5%</span>
-        </div>
-        <div class="compare-bar"><div class="compare-fill" style="width:29%;background:var(--slate-dim)"></div></div>
-      </div>
-      <div class="compare-row">
-        <div class="compare-label">
-          <span>10-Year Treasury</span>
-          <span>~4.2%</span>
-        </div>
+        <div class="compare-label"><span>12-month CD</span><span>~3.5%</span></div>
         <div class="compare-bar"><div class="compare-fill" style="width:35%;background:var(--slate-dim)"></div></div>
       </div>
-    </div>
-    <div class="card" style="border-left:3px solid var(--yellow)">
-      <p style="font-size:14px;line-height:1.6">
-        <strong style="color:var(--white)">Key difference:</strong> Your returns are backed by a physical asset &#8212; 
-        not subject to market volatility. Wholesale assignments recycle capital in 30&#8211;60 days. Even on longer flips, you&#8217;re redeploying 2&#8211;3 times per year.
-      </p>
+      <div class="compare-row">
+        <div class="compare-label"><span>10-year Treasury</span><span>~4.2%</span></div>
+        <div class="compare-bar"><div class="compare-fill" style="width:42%;background:var(--slate-dim)"></div></div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- SLIDE 10: CONTACT -->
-<section class="slide" id="s9" style="text-align:center">
+<!-- ===== SLIDE 6: DEAL EXAMPLE - WHOLESALE ===== -->
+<section class="slide" id="s5">
   <div class="reveal">
-    <div class="label" style="margin-bottom:1.5rem">Let&#8217;s talk</div>
-    <h2 style="font-size:1.75rem;color:var(--white);margin-bottom:0.75rem;line-height:1.15">
-      Ready to put your capital to work?
+    <div class="label" style="margin-bottom:1rem">Example deal</div>
+    <h2 style="font-size:1.5rem;line-height:1.2;margin-bottom:1.25rem">
+      Wholesale assignment &#8212; quick turn
     </h2>
-    <p style="color:var(--slate);margin-bottom:2rem;font-size:15px">
-      Let&#8217;s discuss how Restore STL&#8217;s private lending program fits your investment goals.
+    <div class="card" style="box-shadow:0 0 60px rgba(255,194,0,.04)">
+      <div style="margin-bottom:.75rem">
+        <span class="pill pill-yellow" style="font-size:12px">30&#8211;60 day hold</span>
+      </div>
+      <div class="deal-row"><span class="dl">Purchase price</span><span class="dv">$55,000</span></div>
+      <div class="deal-row"><span class="dl">Holding costs</span><span class="dv">$5,000</span></div>
+      <div class="deal-row"><span class="dl">Your loan amount</span><span class="dv yellow" style="font-size:17px">$60,000</span></div>
+      <div class="deal-row"><span class="dl">We assign the contract for</span><span class="dv">$78,000</span></div>
+      <div class="deal-highlight">
+        <div style="font-size:12px;color:var(--slate);margin-bottom:2px">Your return at 10% annual</div>
+        <div class="big">$822</div>
+        <div class="sub">$60K loan &middot; ~50 days &middot; paid at closing by the title company</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--slate-dim);margin-top:10px;text-align:center">
+      Pro forma illustration. Actual returns vary by deal.
+    </p>
+  </div>
+</section>
+
+<!-- ===== SLIDE 7: DEAL EXAMPLE - FLIP ===== -->
+<section class="slide" id="s6">
+  <div class="reveal">
+    <div class="label" style="margin-bottom:1rem">Example deal</div>
+    <h2 style="font-size:1.5rem;line-height:1.2;margin-bottom:1.25rem">
+      Renovation flip &#8212; longer hold, bigger return
+    </h2>
+    <div class="card" style="box-shadow:0 0 60px rgba(10,135,84,.04)">
+      <div style="margin-bottom:.75rem">
+        <span class="pill pill-green" style="font-size:12px">4&#8211;6 month hold</span>
+      </div>
+      <div class="deal-row"><span class="dl">Purchase price</span><span class="dv">$110,000</span></div>
+      <div class="deal-row"><span class="dl">Renovation + holding</span><span class="dv">$55,000</span></div>
+      <div class="deal-row"><span class="dl">Your loan amount</span><span class="dv yellow" style="font-size:17px">$165,000</span></div>
+      <div class="deal-row"><span class="dl">After-repair value</span><span class="dv">$265,000</span></div>
+      <div class="deal-highlight" style="background:rgba(10,135,84,.05);border-color:rgba(10,135,84,.12)">
+        <div style="font-size:12px;color:var(--slate);margin-bottom:2px">Your return at 10% annual</div>
+        <div class="big" style="color:var(--green-light)">$6,781</div>
+        <div class="sub">$165K loan &middot; ~5 months &middot; paid at closing by the title company</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--slate-dim);margin-top:10px;text-align:center">
+      Pro forma illustration. Actual returns vary by deal.
+    </p>
+  </div>
+</section>
+
+<!-- ===== SLIDE 8: WHAT COULD GO WRONG ===== -->
+<section class="slide" id="s7">
+  <div class="reveal">
+    <div class="label" style="margin-bottom:1rem">Honest risk disclosure</div>
+    <h2 style="font-size:1.6rem;line-height:1.2;margin-bottom:1.25rem">
+      What could go wrong &#8212; and how you&#8217;re protected
+    </h2>
+    <div class="card">
+      <div class="risk-row">
+        <div class="risk-q">&#8220;What if the property doesn&#8217;t sell?&#8221;</div>
+        <div class="risk-a">You hold a 1st position lien. If we can&#8217;t sell, you can take ownership of the property. You&#8217;re never left empty-handed.</div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-q">&#8220;What if repairs cost more than expected?&#8221;</div>
+        <div class="risk-a">That&#8217;s our risk, not yours. Your loan amount is fixed. Overruns come out of our profit, not your return.</div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-q">&#8220;What if it takes longer than expected?&#8221;</div>
+        <div class="risk-a">Your interest keeps accruing. A longer hold means you earn more interest, not less. You get paid when it closes.</div>
+      </div>
+      <div class="risk-row">
+        <div class="risk-q">&#8220;Where does my money actually go?&#8221;</div>
+        <div class="risk-a">Directly to the title company. They handle the disbursement at closing. They also pay you directly when the deal is done.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SLIDE 9: CONTACT ===== -->
+<section class="slide" id="s8" style="text-align:center">
+  <div class="reveal">
+    <h2 style="font-size:1.75rem;line-height:1.15;margin-bottom:.5rem">
+      Simple. Secured. Transparent.
+    </h2>
+    <p style="color:var(--slate);margin-bottom:2rem;font-size:15px;max-width:300px;margin-inline:auto">
+      Ready to learn more? Let&#8217;s walk through a real deal together.
     </p>
     <div style="max-width:320px;margin:0 auto">
-      <a href="tel:3147363311" class="contact-btn btn-primary">Call Kevin &#8212; 314-736-3311</a>
+      <a href="tel:3147363311" class="contact-btn btn-primary">Call &#8212; 314-736-3311</a>
       <a href="mailto:kevin@restorestl.com" class="contact-btn btn-outline">kevin@restorestl.com</a>
     </div>
     <div style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)">
       <h1 style="font-size:1.5rem">
         <span style="color:var(--yellow)">Restore</span><span style="color:var(--slate)">STL</span>
       </h1>
-      <p style="font-size:12px;color:var(--slate-dim);margin-top:8px;line-height:1.5">
-        This is not an offer to sell or solicitation to buy securities.<br>
-        Investment involves risk. Past performance does not guarantee future results.
+      <p style="font-size:12px;color:var(--slate-dim);margin-top:8px;line-height:1.5;max-width:320px;margin-inline:auto">
+        This is not an offer to sell or solicitation to buy securities. 
+        All investments involve risk including possible loss of principal. 
+        Past performance does not guarantee future results.
       </p>
     </div>
   </div>
 </section>
 
 <script>
-const slides = document.querySelectorAll('.slide');
-const dotsContainer = document.getElementById('navDots');
-slides.forEach((_, i) => {
-  const a = document.createElement('a');
-  a.href = '#s' + i;
-  dotsContainer.appendChild(a);
-});
-const dots = dotsContainer.querySelectorAll('a');
-const progressBar = document.getElementById('progress');
-
-function updateNav() {
-  const scrollTop = window.scrollY;
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-  progressBar.style.width = progress + '%';
-  let current = 0;
-  slides.forEach((s, i) => {
-    if (s.getBoundingClientRect().top < window.innerHeight * 0.5) current = i;
-  });
-  dots.forEach((d, i) => d.classList.toggle('active', i === current));
+const slides=document.querySelectorAll('.slide'),dotsC=document.getElementById('navDots'),prog=document.getElementById('progress');
+slides.forEach((_,i)=>{const a=document.createElement('a');a.href='#s'+i;dotsC.appendChild(a)});
+const dots=dotsC.querySelectorAll('a');
+function upd(){
+  const st=window.scrollY,dh=document.documentElement.scrollHeight-window.innerHeight;
+  prog.style.width=(dh>0?st/dh*100:0)+'%';
+  let c=0;slides.forEach((s,i)=>{if(s.getBoundingClientRect().top<window.innerHeight*.5)c=i});
+  dots.forEach((d,i)=>d.classList.toggle('active',i===c));
 }
-window.addEventListener('scroll', updateNav, { passive: true });
-updateNav();
-
-const reveals = document.querySelectorAll('.reveal');
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.15 });
-reveals.forEach(r => revealObserver.observe(r));
-
-const hint = document.querySelector('.scroll-hint');
-if (hint) {
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) hint.style.opacity = '0';
-  }, { passive: true, once: true });
-}
+window.addEventListener('scroll',upd,{passive:true});upd();
+const rev=document.querySelectorAll('.reveal');
+new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')}),{threshold:.15}).observe;
+rev.forEach(r=>new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')}),{threshold:.12}).observe(r));
+const hint=document.querySelector('.scroll-hint');
+if(hint)window.addEventListener('scroll',()=>{if(window.scrollY>50)hint.style.opacity='0'},{passive:true,once:true});
 </script>
 </body>
 </html>
