@@ -30,49 +30,53 @@ type AddressInput = {
   zip_code: string;
 };
 
-type PropertyDetails = {
-  beds?: number;
-  baths?: number;
-  sqft?: number;
-  year_built?: number;
-};
-
 type ValuationResult = {
   estimated_value: number | null;
   value_range_low?: number | null;
   value_range_high?: number | null;
-  property_details_from_avm?: PropertyDetails | null;
+  property_details?: {
+    beds?: number;
+    baths?: number;
+    sqft?: number;
+    year_built?: number;
+    lot_size?: number;
+    property_type?: string;
+  } | null;
+  rent_estimate?: {
+    rent?: number;
+    rent_low?: number;
+    rent_high?: number;
+  } | null;
+  comparables?: Array<{
+    address: string;
+    price: number;
+    sqft?: number;
+    beds?: number;
+    baths?: number;
+    distance: number;
+    days_on_market?: number;
+  }>;
 };
 
-// Qualification picker options
-const TIMELINE_OPTIONS = ['ASAP (30-90 days)', 'Later This Year', 'Just Exploring'];
-const PATH_OPTIONS = ['Cash Offer', 'List on MLS', 'Not Sure'];
-const REASON_OPTIONS = ['Inherited Property', 'Need Money Fast', 'Too Many Repairs', 'Moving/Relocating'];
-
 export default function WMHWWidget() {
-  const [step, setStep] = useState<'address' | 'preview' | 'refine' | 'result'>('address');
+  const [step, setStep] = useState<'address' | 'result'>('address');
   const [address, setAddress] = useState<AddressInput>({
     street_address: '', city: '', state: '', zip_code: ''
   });
   const [addressDisplay, setAddressDisplay] = useState('');
   const [autocompleteReady, setAutocompleteReady] = useState(false);
   const [showManualFields, setShowManualFields] = useState(false);
-  const [details, setDetails] = useState<PropertyDetails>({});
   const [conditionIndex, setConditionIndex] = useState(2); // Default to Average
   const [valuation, setValuation] = useState<ValuationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | undefined>(undefined);
-
-  // Qualification picker state
-  const [timeline, setTimeline] = useState<string | null>(null);
-  const [pathSelected, setPathSelected] = useState<string | null>(null);
-  const [reasonForSelling, setReasonForSelling] = useState<string | null>(null);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   const autocompleteInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const refineTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const sliderEngagedRef = useRef(false);
 
   // Initialize classic Google Places Autocomplete on a standard <input>
   useEffect(() => {
@@ -180,29 +184,9 @@ export default function WMHWWidget() {
     };
   }, []);
 
-  // Dwell time tracking for refine step
+  // Scroll widget into view on step transitions
   useEffect(() => {
-    if (step === 'refine') {
-      refineTimerRef.current = setTimeout(() => {
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: 'refine_step_engaged',
-          engagement_seconds: 10,
-        });
-      }, 10000);
-    }
-
-    return () => {
-      if (refineTimerRef.current) {
-        clearTimeout(refineTimerRef.current);
-        refineTimerRef.current = null;
-      }
-    };
-  }, [step]);
-
-  // Scroll widget into view on step transitions (not initial render)
-  useEffect(() => {
-    if (step === 'preview' || step === 'result') {
+    if (step === 'result') {
       const timeout = setTimeout(() => {
         document.getElementById('instant-offer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
@@ -238,7 +222,6 @@ export default function WMHWWidget() {
 
     // Validate we have an address (either from autocomplete or manual)
     if (!address.street_address || !address.city || !address.state) {
-      // If using autocomplete and they typed but didn't select
       if (autocompleteReady && !showManualFields) {
         setError('Please select an address from the dropdown suggestions.');
         return;
@@ -257,12 +240,11 @@ export default function WMHWWidget() {
 
       const v = await fetchValuation(address);
       setValuation(v);
-      if (v?.property_details_from_avm) setDetails(v.property_details_from_avm);
 
       const fullAddress = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
       sessionStorage.setItem('property_address', fullAddress);
       if (v?.estimated_value) sessionStorage.setItem('estimated_value', String(v.estimated_value));
-      if (v?.property_details_from_avm) sessionStorage.setItem('property_details', JSON.stringify(v.property_details_from_avm));
+      if (v?.property_details) sessionStorage.setItem('property_details', JSON.stringify(v.property_details));
 
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
@@ -271,7 +253,7 @@ export default function WMHWWidget() {
         estimated_value: v.estimated_value || null,
       });
 
-      setStep('preview');
+      setStep('result');
     } catch (err) {
       console.error('valuation failed', err);
       setError('Unable to get estimate. Please try again or contact us directly.');
@@ -281,30 +263,34 @@ export default function WMHWWidget() {
     }
   }
 
-  async function onRefineSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onContactSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(undefined);
 
     const formData = new FormData(e.currentTarget);
-    const first_name = (formData.get('first_name') as string)?.trim() || '';
-    const last_name = (formData.get('last_name') as string)?.trim() || '';
-    const email = (formData.get('email') as string)?.trim() || '';
+    const nameRaw = (formData.get('name') as string)?.trim() || '';
     const phone = (formData.get('phone') as string)?.trim() || '';
 
-    if (!first_name || !last_name) {
-      setError('Please provide your first and last name.');
+    if (!nameRaw) {
+      setError('Please provide your name.');
+      return;
+    }
+    if (!phone) {
+      setError('Please provide your phone number.');
       return;
     }
 
-    if (!email && !phone) {
-      setError('Please provide either email or phone number.');
-      return;
-    }
+    // Split name into first/last
+    const nameParts = nameRaw.split(/\s+/);
+    const first_name = nameParts[0] || '';
+    const last_name = nameParts.slice(1).join(' ') || first_name;
 
     const selectedCondition = CONDITION_TIERS[conditionIndex].label;
     const adjustedValue = valuation?.estimated_value
       ? valuation.estimated_value * CONDITION_TIERS[conditionIndex].multiplier
       : null;
+
+    const pd = valuation?.property_details;
 
     setIsSubmitting(true);
     try {
@@ -319,18 +305,18 @@ export default function WMHWWidget() {
         body: JSON.stringify({
           first_name,
           last_name,
-          email: email || null,
-          phone: phone || null,
+          email: null,
+          phone,
           address: fullAddress,
           condition: selectedCondition,
           estimated_value: valuation?.estimated_value ?? null,
           adjusted_value: adjustedValue ? Math.round(adjustedValue) : null,
-          beds: details.beds ?? null,
-          baths: details.baths ?? null,
-          sqft: details.sqft ?? null,
-          timeline: timeline || null,
-          path_selected: pathSelected || null,
-          reason_for_selling: reasonForSelling || null,
+          beds: pd?.beds ?? null,
+          baths: pd?.baths ?? null,
+          sqft: pd?.sqft ?? null,
+          timeline: null,
+          path_selected: null,
+          reason_for_selling: null,
         }),
       });
 
@@ -339,29 +325,26 @@ export default function WMHWWidget() {
         throw new Error(data.message || `Failed (${resp.status})`);
       }
 
-      // Store for backward compatibility and /book page prefill
-      const fullAddr = `${address.street_address}, ${address.city}, ${address.state} ${address.zip_code}`;
-      sessionStorage.setItem('property_address', fullAddr);
+      // Store for /book page prefill
       sessionStorage.setItem('property_condition', selectedCondition);
       sessionStorage.setItem('adjusted_value', adjustedValue ? String(Math.round(adjustedValue)) : '');
-      sessionStorage.setItem('user_name', `${first_name} ${last_name}`);
-      if (email) sessionStorage.setItem('user_email', email);
-      if (phone) sessionStorage.setItem('user_phone', phone);
+      sessionStorage.setItem('user_name', nameRaw);
+      sessionStorage.setItem('user_phone', phone);
       sessionStorage.setItem('wmhw_completed', 'true');
 
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: 'wmhw_lead_submitted',
-        property_address: fullAddr,
+        property_address: fullAddress,
         property_condition: selectedCondition,
         estimated_value: valuation?.estimated_value || null,
         adjusted_value: adjustedValue ? Math.round(adjustedValue) : null,
-        timeline: timeline || null,
-        path_selected: pathSelected || null,
-        reason_for_selling: reasonForSelling || null,
+        timeline: null,
+        path_selected: null,
+        reason_for_selling: null,
       });
 
-      setStep('result');
+      setContactSubmitted(true);
     } catch (err) {
       console.error('WMHW lead submission failed', err);
       setError(err instanceof Error ? err.message : 'Submission failed. Please try again.');
@@ -377,6 +360,24 @@ export default function WMHWWidget() {
       maximumFractionDigits: 0
     }).format(value);
   };
+
+  const pd = valuation?.property_details;
+  const rent = valuation?.rent_estimate;
+  const comps = valuation?.comparables;
+  const adjustedValue = valuation?.estimated_value
+    ? valuation.estimated_value * CONDITION_TIERS[conditionIndex].multiplier
+    : null;
+  const adjustedLow = valuation?.value_range_low
+    ? valuation.value_range_low * CONDITION_TIERS[conditionIndex].multiplier
+    : null;
+  const adjustedHigh = valuation?.value_range_high
+    ? valuation.value_range_high * CONDITION_TIERS[conditionIndex].multiplier
+    : null;
+
+  // Property type display label
+  const propertyTypeLabel = pd?.property_type
+    ? pd.property_type.replace(/([A-Z])/g, ' $1').trim()
+    : null;
 
   return (
     <section id="instant-offer" className="py-16 bg-white">
@@ -468,7 +469,7 @@ export default function WMHWWidget() {
                         onClick={() => setShowManualFields(false)}
                         className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline transition-colors"
                       >
-                        ← Use address search instead
+                        &larr; Use address search instead
                       </button>
                     )}
                   </div>
@@ -496,7 +497,7 @@ export default function WMHWWidget() {
                   <p className="text-red-600 text-center text-sm">{error}</p>
                 )}
 
-                {/* Manual entry toggle — placed below submit so dropdown can't cover it */}
+                {/* Manual entry toggle */}
                 {!showManualFields && (
                   <button
                     type="button"
@@ -509,106 +510,55 @@ export default function WMHWWidget() {
               </form>
             )}
 
-            {/* Preview Step */}
-            {step === 'preview' && valuation && (
+            {/* Result Step — Full enrichment display */}
+            {step === 'result' && valuation && (
               <div className="space-y-6">
-                <h2 className="text-3xl font-bold text-center text-[var(--text-primary)]">
-                  Your Property Estimate
-                </h2>
-
-                <div className="text-center text-sm text-[var(--text-secondary)]">
-                  <p>{address.street_address}</p>
-                  <p>{address.city}, {address.state} {address.zip_code}</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-[var(--brand-yellow)] rounded-xl p-6 text-center">
-                  <p className="text-sm text-[var(--text-secondary)] uppercase tracking-wide font-medium mb-2">
-                    Estimated Market Value
+                {/* 1. Property Header */}
+                <div className="bg-[var(--charcoal-deep)] text-white rounded-xl p-5">
+                  <h2 className="text-xl font-bold">
+                    {address.street_address}
+                  </h2>
+                  <p className="text-sm text-gray-300">
+                    {address.city}, {address.state} {address.zip_code}
                   </p>
-                  <p className="text-4xl font-bold text-[var(--text-primary)] mb-1">
-                    {valuation.estimated_value
-                      ? formatCurrency(valuation.estimated_value)
-                      : 'Calculating...'}
-                  </p>
-                  {valuation.value_range_low && valuation.value_range_high && (
-                    <p className="text-sm text-[var(--text-secondary)]">
-                      Range: {formatCurrency(valuation.value_range_low)}
-                      {' - '}
-                      {formatCurrency(valuation.value_range_high)}
+                  {(propertyTypeLabel || pd?.year_built) && (
+                    <p className="text-sm text-gray-400 mt-1">
+                      {[propertyTypeLabel, pd?.year_built ? `Built ${pd.year_built}` : null].filter(Boolean).join(' \u00b7 ')}
                     </p>
                   )}
                 </div>
 
-                {(details.beds || details.baths || details.sqft) && (
-                  <div className="grid grid-cols-3 gap-3 text-center text-sm">
-                    {details.beds && (
-                      <div className="bg-[var(--background-gray)] p-3 rounded">
-                        <p className="text-2xl font-bold text-[var(--text-primary)]">{details.beds}</p>
-                        <p className="text-[var(--text-secondary)]">Beds</p>
+                {/* 2. Property Stats Row */}
+                {(pd?.beds || pd?.baths || pd?.sqft || rent?.rent) && (
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    {pd?.beds != null && (
+                      <div className="bg-[var(--background-gray)] px-4 py-2 rounded-full text-sm font-medium text-[var(--text-primary)]">
+                        {pd.beds} Beds
                       </div>
                     )}
-                    {details.baths && (
-                      <div className="bg-[var(--background-gray)] p-3 rounded">
-                        <p className="text-2xl font-bold text-[var(--text-primary)]">{details.baths}</p>
-                        <p className="text-[var(--text-secondary)]">Baths</p>
+                    {pd?.baths != null && (
+                      <div className="bg-[var(--background-gray)] px-4 py-2 rounded-full text-sm font-medium text-[var(--text-primary)]">
+                        {pd.baths} Baths
                       </div>
                     )}
-                    {details.sqft && (
-                      <div className="bg-[var(--background-gray)] p-3 rounded">
-                        <p className="text-2xl font-bold text-[var(--text-primary)]">{new Intl.NumberFormat().format(details.sqft)}</p>
-                        <p className="text-[var(--text-secondary)]">Sq Ft</p>
+                    {pd?.sqft != null && (
+                      <div className="bg-[var(--background-gray)] px-4 py-2 rounded-full text-sm font-medium text-[var(--text-primary)]">
+                        {new Intl.NumberFormat().format(pd.sqft)} Sq Ft
+                      </div>
+                    )}
+                    {rent?.rent != null && (
+                      <div className="bg-[var(--background-gray)] px-4 py-2 rounded-full text-sm font-medium text-[var(--text-primary)]">
+                        {formatCurrency(rent.rent)}/mo
                       </div>
                     )}
                   </div>
                 )}
 
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm">
-                  <p className="font-medium text-slate-900 mb-2">📊 How we calculated this:</p>
-                  <ul className="text-slate-700 space-y-1 text-xs">
-                    <li>• Recent comparable sales in your neighborhood</li>
-                    <li>• Current market trends in {address.city}</li>
-                    <li>• Property characteristics and condition</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  <p className="text-center text-sm text-[var(--text-secondary)]">
-                    Want to explore your options with a real person?
-                  </p>
-                  <button
-                    onClick={() => setStep('refine')}
-                    className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
-                  >
-                    Tell Us About Your Situation
-                  </button>
-                  <button
-                    onClick={() => {
-                      setStep('address');
-                      setAddress({ street_address: '', city: '', state: '', zip_code: '' });
-                      setAddressDisplay('');
-                      setValuation(null);
-                      setDetails({});
-                    }}
-                    className="w-full bg-[var(--background-gray)] text-[var(--text-secondary)] px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-                  >
-                    ← Try Different Address
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Refine Step */}
-            {step === 'refine' && (
-              <form onSubmit={onRefineSubmit} className="space-y-6">
-                <h2 className="text-2xl font-bold text-center text-[var(--text-primary)]">
-                  Help Us Help You
-                </h2>
-
-                {/* Condition Slider */}
+                {/* 3. Condition Slider */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <p className="text-sm font-medium text-[var(--text-primary)]">Property Condition</p>
-                    <span className="text-xs text-[var(--text-secondary)]">{CONDITION_TIERS[conditionIndex].label}</span>
+                    <span className="text-sm font-medium text-[var(--brand-yellow)]">{CONDITION_TIERS[conditionIndex].label}</span>
                   </div>
 
                   <input
@@ -617,11 +567,22 @@ export default function WMHWWidget() {
                     max="4"
                     step="1"
                     value={conditionIndex}
-                    onChange={(e) => setConditionIndex(Number(e.target.value))}
+                    onChange={(e) => {
+                      const newIndex = Number(e.target.value);
+                      setConditionIndex(newIndex);
+                      if ('vibrate' in navigator) {
+                        navigator.vibrate(10);
+                      }
+                      if (!sliderEngagedRef.current) {
+                        sliderEngagedRef.current = true;
+                        window.dataLayer = window.dataLayer || [];
+                        window.dataLayer.push({ event: 'wmhw_slider_engaged' });
+                      }
+                    }}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[var(--brand-yellow)]"
                   />
 
-                  <div className="flex justify-between mt-2 text-xs text-[var(--text-secondary)]">
+                  <div className="flex justify-between mt-1 text-xs text-[var(--text-secondary)]">
                     <span className="w-1/5 text-center">Poor</span>
                     <span className="w-1/5 text-center">Fair</span>
                     <span className="w-1/5 text-center">Avg</span>
@@ -633,195 +594,157 @@ export default function WMHWWidget() {
                     <p className="font-medium mb-1 text-[var(--text-primary)]">{CONDITION_TIERS[conditionIndex].label}</p>
                     <p className="text-xs text-[var(--text-secondary)]">{CONDITION_TIERS[conditionIndex].desc}</p>
                   </div>
-
-                  {/* Dynamic Adjusted Estimate */}
-                  {valuation?.estimated_value && (
-                    <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-[var(--brand-yellow)] rounded-xl p-4 text-center mt-4">
-                      <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wide font-medium mb-1">
-                        Adjusted Estimate
-                      </p>
-                      <p className="text-3xl font-bold text-[var(--text-primary)]">
-                        {formatCurrency(valuation.estimated_value * CONDITION_TIERS[conditionIndex].multiplier)}
-                      </p>
-                      <p className="text-xs text-[var(--text-secondary)] mt-1">
-                        Based on {CONDITION_TIERS[conditionIndex].label.toLowerCase()} condition
-                      </p>
-                    </div>
-                  )}
                 </div>
 
-                {/* Qualification Pickers */}
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">Tell us about your situation</p>
-                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">This helps us prepare the right information for you.</p>
-                  </div>
-
-                  {/* Timeline Picker */}
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-[var(--text-secondary)]">What&apos;s your timeline?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {TIMELINE_OPTIONS.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => setTimeline(timeline === opt ? null : opt)}
-                          className={`border rounded-full px-4 py-2 text-sm cursor-pointer transition-colors ${
-                            timeline === opt
-                              ? 'bg-[var(--brand-yellow)] border-[var(--brand-yellow)] text-[var(--charcoal-deep)] font-medium'
-                              : 'bg-white border-[var(--border-gray)] text-[var(--text-secondary)]'
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Path Picker */}
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-[var(--text-secondary)]">What are you looking for?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {PATH_OPTIONS.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => setPathSelected(pathSelected === opt ? null : opt)}
-                          className={`border rounded-full px-4 py-2 text-sm cursor-pointer transition-colors ${
-                            pathSelected === opt
-                              ? 'bg-[var(--brand-yellow)] border-[var(--brand-yellow)] text-[var(--charcoal-deep)] font-medium'
-                              : 'bg-white border-[var(--border-gray)] text-[var(--text-secondary)]'
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Reason Picker */}
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-[var(--text-secondary)]">What&apos;s driving the sale?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {REASON_OPTIONS.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => setReasonForSelling(reasonForSelling === opt ? null : opt)}
-                          className={`border rounded-full px-4 py-2 text-sm cursor-pointer transition-colors ${
-                            reasonForSelling === opt
-                              ? 'bg-[var(--brand-yellow)] border-[var(--brand-yellow)] text-[var(--charcoal-deep)] font-medium'
-                              : 'bg-white border-[var(--border-gray)] text-[var(--text-secondary)]'
-                          }`}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-
-                {/* Contact Form */}
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    name="first_name"
-                    autoComplete="given-name"
-                    className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
-                    placeholder="First name"
-                    required
-                  />
-                  <input
-                    name="last_name"
-                    autoComplete="family-name"
-                    className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
-                    placeholder="Last name"
-                    required
-                  />
-                  <input
-                    name="email"
-                    autoComplete="email"
-                    className="col-span-2 px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
-                    placeholder="Email (optional if phone provided)"
-                    type="email"
-                  />
-                  <input
-                    name="phone"
-                    autoComplete="tel"
-                    inputMode="tel"
-                    className="col-span-2 px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all"
-                    placeholder="Phone (optional if email provided)"
-                    type="tel"
-                  />
-                  <p className="col-span-2 text-xs text-[var(--text-secondary)] text-center">
-                    How should we reach you?
-                  </p>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Submitting...
-                    </span>
-                  ) : (
-                    'Get My Free Analysis'
-                  )}
-                </button>
-              </form>
-            )}
-
-            {/* Result Step */}
-            {step === 'result' && (
-              <div className="text-center space-y-5">
-                <div className="text-5xl mb-2">🏠</div>
-                <h3 className="text-2xl font-bold text-[var(--text-primary)]">You&apos;re All Set.</h3>
-
-                {valuation?.estimated_value && (
-                  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-[var(--brand-yellow)] rounded-xl p-5 text-center">
-                    <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wide font-medium mb-1">
-                      Your Adjusted Estimate
+                {/* 4. Adjusted Value Display */}
+                {valuation.estimated_value && adjustedValue && (
+                  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-[var(--brand-yellow)] rounded-xl p-6 text-center">
+                    <p className="text-sm text-[var(--text-secondary)] uppercase tracking-wide font-medium mb-2">
+                      Adjusted Estimate
                     </p>
-                    <p className="text-3xl font-bold text-[var(--text-primary)]">
-                      {formatCurrency(valuation.estimated_value * CONDITION_TIERS[conditionIndex].multiplier)}
+                    <p className="text-4xl font-bold text-[var(--text-primary)] mb-1">
+                      {formatCurrency(adjustedValue)}
                     </p>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1">
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {adjustedLow && adjustedHigh && (
+                        <>Range: {formatCurrency(adjustedLow)} &ndash; {formatCurrency(adjustedHigh)} &middot; </>
+                      )}
                       Based on {CONDITION_TIERS[conditionIndex].label.toLowerCase()} condition
                     </p>
                   </div>
                 )}
 
-                <div className="border-t border-gray-200 pt-5 space-y-3">
-                  <p className="text-lg font-semibold text-[var(--text-primary)]">
-                    We&apos;re Putting Your Report Together.
-                  </p>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                    We&apos;re building a detailed report with comparable sales, market data,
-                    and your options. Book a quick call and we&apos;ll walk through everything
-                    together &mdash; no pressure, no obligation.
-                  </p>
+                {/* 5. Comparable Sales */}
+                {comps && comps.length > 0 && (
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium text-[var(--text-primary)]">Recent comparable sales nearby</p>
+                    <div className="space-y-2">
+                      {comps.map((comp, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 border border-[var(--border-gray)] rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium text-[var(--text-primary)]">{comp.address}</p>
+                            <p className="text-xs text-[var(--text-secondary)]">
+                              {[
+                                comp.beds != null ? `${comp.beds}bd` : null,
+                                comp.baths != null ? `${comp.baths}ba` : null,
+                                comp.sqft != null ? `${new Intl.NumberFormat().format(comp.sqft)} sqft` : null,
+                              ].filter(Boolean).join(' \u00b7 ')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-[var(--text-primary)]">{formatCurrency(comp.price)}</p>
+                            <p className="text-xs text-[var(--text-secondary)]">
+                              {comp.distance} mi{comp.days_on_market != null ? ` \u00b7 ${comp.days_on_market} DOM` : ''}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 6. Rent Estimate Callout */}
+                {rent?.rent_low && rent?.rent_high && (
+                  <div className="bg-[var(--background-gray)] p-4 rounded-lg flex items-start gap-3">
+                    <svg className="w-5 h-5 text-[var(--text-secondary)] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      This property could rent for {formatCurrency(rent.rent_low)} &ndash; {formatCurrency(rent.rent_high)}/mo based on nearby rentals
+                    </p>
+                  </div>
+                )}
+
+                {/* 7. CTA Section */}
+                <div className="space-y-3 pt-2">
                   <a
                     href="/book"
                     onClick={() => {
                       window.dataLayer = window.dataLayer || [];
-                      window.dataLayer.push({ event: 'calendly_click' });
+                      window.dataLayer.push({ event: 'wmhw_book_click' });
                     }}
-                    className="inline-block w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
+                    className="block w-full bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] text-center px-6 py-4 rounded-lg font-bold text-lg transition-colors min-h-[44px]"
                   >
-                    Time to Talk
+                    Book a Call with Kevin
                   </a>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    Your friends in real estate.
-                  </p>
+                  <a
+                    href="tel:+13147363311"
+                    onClick={() => {
+                      window.dataLayer = window.dataLayer || [];
+                      window.dataLayer.push({ event: 'wmhw_call_click' });
+                    }}
+                    className="flex items-center justify-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span className="text-sm">Call or text Kevin: (314) 736-3311</span>
+                  </a>
                 </div>
+
+                {/* 8. Optional Contact Capture */}
+                <div className="border-t border-[var(--border-gray)] pt-6">
+                  {!contactSubmitted ? (
+                    <form onSubmit={onContactSubmit} className="space-y-3">
+                      <p className="text-sm text-[var(--text-secondary)] text-center">
+                        Want us to prepare a detailed report before we talk?
+                      </p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          name="name"
+                          autoComplete="name"
+                          className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all text-sm"
+                          placeholder="Your name"
+                          required
+                        />
+                        <input
+                          name="phone"
+                          autoComplete="tel"
+                          inputMode="tel"
+                          type="tel"
+                          className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all text-sm"
+                          placeholder="Phone number"
+                          required
+                        />
+                      </div>
+                      {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full bg-[var(--charcoal-deep)] hover:bg-gray-800 text-white px-4 py-3 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                      >
+                        {isSubmitting ? 'Sending...' : 'Send My Report'}
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="text-center py-2">
+                      <p className="text-sm text-green-700 font-medium">
+                        Got it! We&apos;ll have your report ready.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* 9. Privacy Note */}
+                <p className="text-xs text-[var(--text-secondary)] text-center">
+                  Your information stays with us. Period. We never sell leads.
+                </p>
+
+                {/* Try Different Address */}
+                <button
+                  onClick={() => {
+                    setStep('address');
+                    setAddress({ street_address: '', city: '', state: '', zip_code: '' });
+                    setAddressDisplay('');
+                    setValuation(null);
+                    setConditionIndex(2);
+                    setContactSubmitted(false);
+                    sliderEngagedRef.current = false;
+                  }}
+                  className="w-full text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline transition-colors text-center"
+                >
+                  &larr; Try Different Address
+                </button>
               </div>
             )}
           </div>
