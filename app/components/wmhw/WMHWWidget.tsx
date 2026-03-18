@@ -269,10 +269,15 @@ export default function WMHWWidget() {
 
     const formData = new FormData(e.currentTarget);
     const nameRaw = (formData.get('name') as string)?.trim() || '';
+    const email = (formData.get('email') as string)?.trim() || '';
     const phone = (formData.get('phone') as string)?.trim() || '';
 
     if (!nameRaw) {
       setError('Please provide your name.');
+      return;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Please provide a valid email address.');
       return;
     }
     if (!phone) {
@@ -305,15 +310,20 @@ export default function WMHWWidget() {
         body: JSON.stringify({
           first_name,
           last_name,
-          email: null,
+          email,
           phone,
           address: fullAddress,
           condition: selectedCondition,
           estimated_value: valuation?.estimated_value ?? null,
           adjusted_value: adjustedValue ? Math.round(adjustedValue) : null,
+          value_range_low: valuation?.value_range_low ?? null,
+          value_range_high: valuation?.value_range_high ?? null,
           beds: pd?.beds ?? null,
           baths: pd?.baths ?? null,
           sqft: pd?.sqft ?? null,
+          property_details: valuation?.property_details ?? null,
+          comparables: valuation?.comparables ?? null,
+          rent_estimate: valuation?.rent_estimate ?? null,
           timeline: null,
           path_selected: null,
           reason_for_selling: null,
@@ -329,6 +339,7 @@ export default function WMHWWidget() {
       sessionStorage.setItem('property_condition', selectedCondition);
       sessionStorage.setItem('adjusted_value', adjustedValue ? String(Math.round(adjustedValue)) : '');
       sessionStorage.setItem('user_name', nameRaw);
+      sessionStorage.setItem('user_email', email);
       sessionStorage.setItem('user_phone', phone);
       sessionStorage.setItem('wmhw_completed', 'true');
 
@@ -687,14 +698,22 @@ export default function WMHWWidget() {
                   {!contactSubmitted ? (
                     <form onSubmit={onContactSubmit} className="space-y-3">
                       <p className="text-sm text-[var(--text-secondary)] text-center">
-                        Want us to prepare a detailed report before we talk?
+                        Enter your info to receive your free property analysis
                       </p>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3">
                         <input
                           name="name"
                           autoComplete="name"
                           className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all text-sm"
                           placeholder="Your name"
+                          required
+                        />
+                        <input
+                          name="email"
+                          autoComplete="email"
+                          type="email"
+                          className="px-4 py-3 border border-[var(--border-gray)] rounded-lg focus:ring-2 focus:ring-[var(--brand-yellow)] focus:border-transparent outline-none transition-all text-sm"
+                          placeholder="Email — we'll send your report here"
                           required
                         />
                         <input
@@ -713,13 +732,13 @@ export default function WMHWWidget() {
                         disabled={isSubmitting}
                         className="w-full bg-[var(--charcoal-deep)] hover:bg-gray-800 text-white px-4 py-3 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                       >
-                        {isSubmitting ? 'Sending...' : 'Send My Report'}
+                        {isSubmitting ? 'Sending...' : 'Email My Free Report'}
                       </button>
                     </form>
                   ) : (
                     <div className="text-center py-2">
                       <p className="text-sm text-green-700 font-medium">
-                        Got it! We&apos;ll have your report ready.
+                        Check your inbox — your analysis is on the way.
                       </p>
                     </div>
                   )}
