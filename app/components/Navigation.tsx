@@ -36,6 +36,12 @@ export default function Navigation() {
             >
               About
             </Link>
+            <Link
+              href="/sell"
+              className="text-white hover:text-[var(--brand-yellow)] transition-colors duration-200 font-medium"
+            >
+              Sell Your House
+            </Link>
             <a
               href="tel:+13147363311"
               className="text-white hover:text-[var(--brand-yellow)] transition-colors duration-200 font-medium flex items-center gap-2"
@@ -46,10 +52,10 @@ export default function Navigation() {
               (314) 736-3311
             </a>
             <Link
-              href="/sell"
+              href="/book"
               className="bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] font-semibold px-5 py-2 rounded-lg transition-all duration-200"
             >
-              Sell Your House
+              Book a Call
             </Link>
           </div>
 
@@ -75,7 +81,7 @@ export default function Navigation() {
         {/* Mobile Navigation Menu */}
         <div
           className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
-            isMobileMenuOpen ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'
+            isMobileMenuOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
           <div className="py-4 space-y-2 border-t border-white/10">
@@ -93,6 +99,13 @@ export default function Navigation() {
             >
               About
             </Link>
+            <Link
+              href="/sell"
+              className="block text-white hover:text-[var(--brand-yellow)] transition-colors duration-200 font-medium py-3 px-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Sell Your House
+            </Link>
             <a
               href="tel:+13147363311"
               className="flex items-center gap-3 text-white hover:text-[var(--brand-yellow)] transition-colors duration-200 font-medium py-3 px-2"
@@ -104,11 +117,11 @@ export default function Navigation() {
               (314) 736-3311
             </a>
             <Link
-              href="/sell"
+              href="/book"
               className="block bg-[var(--brand-yellow)] hover:bg-[var(--brand-yellow-hover)] text-[var(--charcoal-deep)] font-semibold py-3 px-4 rounded-lg text-center transition-colors duration-200"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Sell Your House
+              Book a Call
             </Link>
           </div>
         </div>

@@ -50,7 +50,7 @@ export default function CalendlyEmbed() {
   return (
     <div
       className="calendly-inline-widget"
-      data-url="https://calendly.com/chris-restorestl/15min?hide_gdpr_banner=1&hide_landing_page_details=1"
+      data-url="https://calendly.com/chris-restorestl/15min?hide_gdpr_banner=1&hide_landing_page_details=1&hide_event_type_details=1"
       style={{ minWidth: '320px', height: '700px' }}
     />
   );

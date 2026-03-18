@@ -18,13 +18,15 @@ export default function BookPage() {
         <section className="bg-[var(--charcoal-deep)] py-16 md:py-24">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Free Property Consultation
+              Let&apos;s Talk About Your Property
             </h1>
             <p className="text-xl md:text-2xl text-[var(--brand-yellow)] font-medium mb-3">
-              15 minutes. No pressure. Just real numbers for your property.
+              15 minutes with Kevin. Real numbers. Real options. No pitch.
             </p>
             <p className="text-gray-400 text-lg">
-              Talk with a local St. Louis property specialist who knows your neighborhood.
+              Kevin has 25+ years in St. Louis real estate. He&apos;ll walk you through
+              exactly what your property is worth, what your options are, and what each
+              path actually costs. You keep the report either way.
             </p>
           </div>
         </section>
@@ -37,12 +39,12 @@ export default function BookPage() {
               <div className="bg-white rounded-xl p-6 shadow-sm text-center">
                 <div className="text-4xl mb-3">📋</div>
                 <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">
-                  1. We Prepare
+                  1. We do our homework
                 </h3>
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  Before the call, we pull comparable sales, analyze market
-                  trends, and build a detailed property analysis report just for
-                  you.
+                  Before we talk, we pull comparable sales, check market trends,
+                  and build a detailed property analysis. You&apos;ll have real numbers
+                  before the call even starts.
                 </p>
               </div>
 
@@ -50,12 +52,11 @@ export default function BookPage() {
               <div className="bg-white rounded-xl p-6 shadow-sm text-center">
                 <div className="text-4xl mb-3">📞</div>
                 <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">
-                  2. We Talk
+                  2. Kevin walks you through it
                 </h3>
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  We walk through the numbers together — your home&apos;s value,
-                  what repairs (if any) would boost it, and what a cash offer
-                  could look like.
+                  He&apos;ll show you both paths &mdash; what a cash offer looks like AND what
+                  listing on the MLS could get you. No gatekeeping. The data is yours.
                 </p>
               </div>
 
@@ -63,12 +64,11 @@ export default function BookPage() {
               <div className="bg-white rounded-xl p-6 shadow-sm text-center">
                 <div className="text-4xl mb-3">✅</div>
                 <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">
-                  3. You Decide
+                  3. You decide. No rush.
                 </h3>
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  No obligation. You keep the report either way. If our offer
-                  makes sense, great — if not, you&apos;re more informed for
-                  whatever comes next.
+                  Keep the report either way. If our offer makes sense, great.
+                  If not, you&apos;re more informed than when you started. That&apos;s a win.
                 </p>
               </div>
             </div>
@@ -82,7 +82,7 @@ export default function BookPage() {
               {/* Yellow Header Bar */}
               <div className="bg-[var(--brand-yellow)] px-6 py-4 text-center">
                 <h2 className="text-xl font-bold text-[var(--charcoal-deep)]">
-                  Pick a Time That Works for You
+                  Pick a time &mdash; Kevin&apos;s ready when you are
                 </h2>
               </div>
               <div className="p-2 sm:p-4">
@@ -97,8 +97,8 @@ export default function BookPage() {
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
             <p className="text-sm text-[var(--text-secondary)] flex items-center justify-center gap-2">
               <span>🔒</span>
-              Your information is private and will never be shared with third
-              parties.
+              Your information stays with us. Period. We don&apos;t sell leads, share your
+              data, or add you to investor lists. One call, one team.
             </p>
 
             <div className="flex flex-wrap justify-center gap-6 text-sm font-medium text-[var(--text-primary)]">
@@ -128,10 +128,10 @@ export default function BookPage() {
         <section className="py-12 bg-white">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
-              Prefer to call or text?
+              Rather just call Kevin?
             </h3>
             <p className="text-[var(--text-secondary)] mb-4">
-              Reach us directly — we respond fast.
+              He picks up. Seriously.
             </p>
             <a
               href="tel:+13147363311"
